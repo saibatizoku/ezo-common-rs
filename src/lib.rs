@@ -23,6 +23,16 @@ pub enum BpsRate {
     Bps115200 = 115200,
 }
 
+/// Known response codes from EZO chip interactions.
+#[derive(Clone,Debug,PartialEq,Eq)]
+pub enum ResponseCode {
+    NoDataExpected = 0xFF,
+    Pending = 0xFE,
+    DeviceError = 0x02,
+    Success = 0x01,
+    UnknownError = 0x00, // This code is NOT implemented by the EZO chips
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
