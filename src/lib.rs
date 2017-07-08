@@ -10,6 +10,35 @@ pub mod errors {
     error_chain!{}
 }
 
+/// Crude parser for the data string sent by the EZO chip.
+pub fn parse_data_ascii_bytes(data_buffer: &[u8]) -> Vec<u8> {
+    match data_buffer.iter().position(|&x| x == 0) {
+        Some(len) => read_hardware_buffer(&data_buffer[..len], true),
+        _ => read_hardware_buffer(&data_buffer[..], true),
+    }
+}
+
+/// Read buffer from the hardware. Accepts a `flipping` flag for glitchy hardware.
+pub fn read_hardware_buffer(buf: &[u8], flipping: bool) -> Vec<u8> {
+    if flipping {
+        buf.iter().map(|buf| (*buf & !0x80)).collect()
+    } else {
+        Vec::from(&buf[..])
+    }
+}
+
+/// Determines the response code sent by the EZO chip.
+pub fn response_code(code_byte: u8) -> ResponseCode {
+    use self::ResponseCode::*;
+    match code_byte {
+        x if x == NoDataExpected as u8 => NoDataExpected,
+        x if x == Pending as u8 => Pending,
+        x if x == DeviceError as u8 => DeviceError,
+        x if x == Success as u8 => Success,
+        _ => UnknownError,
+    }
+}
+
 /// Allowable baudrates used when changing the chip to UART mode.
 #[derive(Debug)]
 pub enum BpsRate {
