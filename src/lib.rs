@@ -4,11 +4,18 @@
 #![recursion_limit = "1024"]
 #[macro_use]
 extern crate error_chain;
+extern crate i2cdev;
 
 /// Use error-chain for error-handling.
 pub mod errors {
     error_chain!{}
 }
+
+use errors::*;
+use i2cdev::core::I2CDevice;
+use i2cdev::linux::LinuxI2CDevice;
+use std::thread;
+use std::time::Duration;
 
 /// Crude parser for the data string sent by the EZO chip.
 pub fn parse_data_ascii_bytes(data_buffer: &[u8]) -> Vec<u8> {
@@ -60,6 +67,24 @@ pub enum ResponseCode {
     DeviceError = 0x02,
     Success = 0x01,
     UnknownError = 0x00, // This code is NOT implemented by the EZO chips
+}
+
+/// Writes the ASCII command to the EZO chip, with one retry.
+pub fn write_to_ezo(dev: &mut LinuxI2CDevice, cmd: &[u8]) -> Result<()> {
+    if let Err(_) = dev.write(cmd) {
+        thread::sleep(Duration::from_millis(100));
+        dev.write(cmd)
+            .chain_err(|| "Command could not be sent")?;
+    };
+    Ok(())
+}
+
+/// Read the buffered response from the EZO chip.
+pub fn read_raw_buffer(dev: &mut LinuxI2CDevice, max_data: usize) -> Result<Vec<u8>> {
+    let mut data_buffer = vec![0u8; max_data];
+    dev.read(&mut data_buffer)
+        .chain_err(|| "Error reading from device")?;
+    Ok(data_buffer)
 }
 
 #[cfg(test)]
