@@ -17,6 +17,15 @@ use i2cdev::linux::LinuxI2CDevice;
 use std::thread;
 use std::time::Duration;
 
+/// Runs commands.
+pub trait CommandRunner {
+    fn delay(&self) -> Result<()>;
+    fn parse_response(&self) -> Result<String>;
+    fn read_response(&mut self, dev: &mut LinuxI2CDevice) -> Result<()>;
+    fn run(&mut self, dev: &mut LinuxI2CDevice) -> Result<()>;
+    fn write(&mut self, dev: &mut LinuxI2CDevice) -> Result<()>;
+}
+
 /// Crude parser for the data string sent by the EZO chip.
 pub fn parse_data_ascii_bytes(data_buffer: &[u8]) -> Vec<u8> {
     match data_buffer.iter().position(|&x| x == 0) {
