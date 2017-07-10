@@ -14,6 +14,7 @@ pub mod errors {
 use errors::*;
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::LinuxI2CDevice;
+use std::ascii::AsciiExt;
 use std::thread;
 use std::time::Duration;
 
@@ -27,7 +28,7 @@ pub fn parse_data_ascii_bytes(data_buffer: &[u8]) -> Vec<u8> {
 
 /// Read buffer from the hardware. Accepts a `flipping` flag for glitchy hardware.
 pub fn read_hardware_buffer(buf: &[u8], flipping: bool) -> Vec<u8> {
-    if flipping {
+    if flipping | !buf.is_ascii() {
         buf.iter().map(|buf| (*buf & !0x80)).collect()
     } else {
         Vec::from(&buf[..])
@@ -90,6 +91,13 @@ pub fn read_raw_buffer(dev: &mut LinuxI2CDevice, max_data: usize) -> Result<Vec<
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn determine_if_response_is_ascii() {
+        let data: [u8; 11] = [63, 73, 44, 112, 72, 44, 49, 46, 57, 56, 0];
+        let flipped_data: [u8; 11] = [63, 73, 172, 112, 200, 172, 49, 46, 57, 56, 0];
+        assert_eq!(data.is_ascii(), true);
+        assert_eq!(flipped_data.is_ascii(), false);
+    }
     #[test]
     fn process_no_data_response_code() {
         assert_eq!(response_code(255), ResponseCode::NoDataExpected);
