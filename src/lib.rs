@@ -74,7 +74,7 @@ pub fn read_raw_buffer(dev: &mut LinuxI2CDevice, max_data: usize) -> Result<Vec<
 /// Turns off the high bit in each of the bytes of `v`.  Raspberry Pi
 /// for some reason outputs i2c buffers with some of the high bits
 /// turned on.
-pub fn turn_off_high_bits(v: &mut [u8]) {
+fn turn_off_high_bits(v: &mut [u8]) {
     for b in v.iter_mut () {
         *b = *b & 0x7f;
     }
