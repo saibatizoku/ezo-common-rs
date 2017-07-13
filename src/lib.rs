@@ -29,12 +29,12 @@ pub fn parse_data_ascii_bytes(data_buffer: &[u8]) -> Vec<u8> {
     }
 }
 
-/// Read buffer from the hardware. Accepts a `flipping` flag for glitchy hardware.
-pub fn read_hardware_buffer(buf: &[u8], flipping: bool) -> Vec<u8> {
-    if flipping | !buf.is_ascii() {
-        buf.iter().map(|buf| (*buf & !0x80)).collect()
+/// Read byte buffer from the hardware.
+pub fn read_hardware_buffer(response: &[u8]) -> Vec<u8> {
+    if !response.is_ascii() {
+        response.iter().map(|buf| (*buf & !0x80)).collect()
     } else {
-        Vec::from(&buf[..])
+        Vec::from(&response[..])
     }
 }
 

@@ -6,6 +6,7 @@ A library with shared functionality for the `EZO` chip, made by Atlas Scientific
 >   Currently, only I2C communication is available.
 
 ## Requirements
+
 This version needs _nightly_ to compile, since it makes use of `#![feature(inclusive_range_syntax)]`.
 
 This crate makes use of `error-chain` to handle errors. Include it in your dependencies to make use of it.
