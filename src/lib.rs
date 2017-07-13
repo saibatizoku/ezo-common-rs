@@ -91,15 +91,24 @@ pub fn read_raw_buffer(dev: &mut LinuxI2CDevice, max_data: usize) -> Result<Vec<
     Ok(data_buffer)
 }
 
+/// Turns off the high bit in each of the bytes of `v`.  Raspberry Pi
+/// for some reason outputs i2c buffers with some of the high bits
+/// turned on.
+pub fn turn_off_high_bits(v: &mut [u8]) {
+    for b in v.iter_mut () {
+        *b = *b & 0x7f;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
-    fn determine_if_response_is_ascii() {
+    fn turns_off_high_bits() {
         let data: [u8; 11] = [63, 73, 44, 112, 72, 44, 49, 46, 57, 56, 0];
-        let flipped_data: [u8; 11] = [63, 73, 172, 112, 200, 172, 49, 46, 57, 56, 0];
-        assert_eq!(data.is_ascii(), true);
-        assert_eq!(flipped_data.is_ascii(), false);
+        let mut flipped_data: [u8; 11] = [63, 73, 172, 112, 200, 172, 49, 46, 57, 56, 0];
+        turn_off_high_bits(&mut flipped_data);
+        assert_eq!(data, flipped_data);
     }
     #[test]
     fn process_no_data_response_code() {
