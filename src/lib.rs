@@ -14,27 +14,9 @@ pub mod errors;
 use errors::*;
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::LinuxI2CDevice;
-use std::ascii::AsciiExt;
 use std::ffi::CStr;
 use std::thread;
 use std::time::Duration;
-
-/// Crude parser for the data string sent by the EZO chip.
-pub fn parse_data_ascii_bytes(data_buffer: &[u8]) -> Vec<u8> {
-    match data_buffer.iter().position(|&x| x == 0) {
-        Some(len) => read_hardware_buffer(&data_buffer[...len]),
-        _ => read_hardware_buffer(&data_buffer[..]),
-    }
-}
-
-/// Read byte buffer from the hardware.
-pub fn read_hardware_buffer(response: &[u8]) -> Vec<u8> {
-    if !response.is_ascii() {
-        response.iter().map(|buf| (*buf & !0x80)).collect()
-    } else {
-        Vec::from(&response[..])
-    }
-}
 
 /// Determines the response code sent by the EZO chip.
 pub fn response_code(code_byte: u8) -> ResponseCode {
@@ -180,44 +162,5 @@ mod tests {
         assert_eq!(response_code(0), ResponseCode::UnknownError);
         assert_eq!(response_code(16), ResponseCode::UnknownError);
         assert_eq!(response_code(156), ResponseCode::UnknownError);
-    }
-    #[test]
-    fn parsing_nonzeros_response() {
-        let data: [u8; 0] = [];
-        let parsed = parse_data_ascii_bytes(&data);
-        assert_eq!(parsed.len(), 0);
-        let data: [u8; 6] = [0, 98, 99, 65, 66, 67];
-        let parsed = parse_data_ascii_bytes(&data);
-        assert_eq!(parsed.len(), 1);
-        let data: [u8; 6] = [97, 98, 0, 65, 66, 67];
-        let parsed = parse_data_ascii_bytes(&data);
-        assert_eq!(parsed.len(), 3);
-        let data: [u8; 6] = [97, 98, 99, 65, 66, 67];
-        let parsed = parse_data_ascii_bytes(&data);
-        assert_eq!(parsed.len(), 6);
-    }
-    #[test]
-    fn parsing_abc_response() {
-        let data: [u8; 6] = [97, 98, 99, 65, 66, 67];
-        let parsed = String::from_utf8(parse_data_ascii_bytes(&data)).unwrap();
-        assert_eq!(&parsed, "abcABC");
-    }
-    #[test]
-    fn parsing_empty_response() {
-        let data: [u8; 3] = [0, 0, 0];
-        let parsed = String::from_utf8(parse_data_ascii_bytes(&data)).unwrap();
-        assert_eq!(&parsed, "\0");
-    }
-    #[test]
-    fn parsing_non_flipped_data_response() {
-        let data: [u8; 11] = [63, 73, 44, 112, 72, 44, 49, 46, 57, 56, 0];
-        let parsed = String::from_utf8(parse_data_ascii_bytes(&data)).unwrap();
-        assert_eq!(&parsed, "?I,pH,1.98\0");
-    }
-    #[test]
-    fn parsing_flipped_data_response() {
-        let data: [u8; 11] = [63, 73, 172, 112, 200, 172, 49, 46, 57, 56, 0];
-        let parsed = String::from_utf8(parse_data_ascii_bytes(&data)).unwrap();
-        assert_eq!(&parsed, "?I,pH,1.98\0");
     }
 }
