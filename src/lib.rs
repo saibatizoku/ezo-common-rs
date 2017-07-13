@@ -2,6 +2,9 @@
 //! media.
 
 #![recursion_limit = "1024"]
+
+#![feature(inclusive_range_syntax)]
+
 #[macro_use]
 extern crate error_chain;
 extern crate i2cdev;
@@ -21,8 +24,8 @@ use std::time::Duration;
 /// Crude parser for the data string sent by the EZO chip.
 pub fn parse_data_ascii_bytes(data_buffer: &[u8]) -> Vec<u8> {
     match data_buffer.iter().position(|&x| x == 0) {
-        Some(len) => read_hardware_buffer(&data_buffer[..len], true),
-        _ => read_hardware_buffer(&data_buffer[..], true),
+        Some(len) => read_hardware_buffer(&data_buffer[...len]),
+        _ => read_hardware_buffer(&data_buffer[..]),
     }
 }
 
@@ -128,10 +131,10 @@ mod tests {
         assert_eq!(parsed.len(), 0);
         let data: [u8; 6] = [0, 98, 99, 65, 66, 67];
         let parsed = parse_data_ascii_bytes(&data);
-        assert_eq!(parsed.len(), 0);
+        assert_eq!(parsed.len(), 1);
         let data: [u8; 6] = [97, 98, 0, 65, 66, 67];
         let parsed = parse_data_ascii_bytes(&data);
-        assert_eq!(parsed.len(), 2);
+        assert_eq!(parsed.len(), 3);
         let data: [u8; 6] = [97, 98, 99, 65, 66, 67];
         let parsed = parse_data_ascii_bytes(&data);
         assert_eq!(parsed.len(), 6);
@@ -146,18 +149,18 @@ mod tests {
     fn parsing_empty_response() {
         let data: [u8; 3] = [0, 0, 0];
         let parsed = String::from_utf8(parse_data_ascii_bytes(&data)).unwrap();
-        assert_eq!(&parsed, "");
+        assert_eq!(&parsed, "\0");
     }
     #[test]
     fn parsing_non_flipped_data_response() {
         let data: [u8; 11] = [63, 73, 44, 112, 72, 44, 49, 46, 57, 56, 0];
         let parsed = String::from_utf8(parse_data_ascii_bytes(&data)).unwrap();
-        assert_eq!(&parsed, "?I,pH,1.98");
+        assert_eq!(&parsed, "?I,pH,1.98\0");
     }
     #[test]
     fn parsing_flipped_data_response() {
         let data: [u8; 11] = [63, 73, 172, 112, 200, 172, 49, 46, 57, 56, 0];
         let parsed = String::from_utf8(parse_data_ascii_bytes(&data)).unwrap();
-        assert_eq!(&parsed, "?I,pH,1.98");
+        assert_eq!(&parsed, "?I,pH,1.98\0");
     }
 }
