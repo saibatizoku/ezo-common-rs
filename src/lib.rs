@@ -87,6 +87,11 @@ pub fn turn_off_high_bits(v: &mut [u8]) {
 ///
 /// This function ensures that the response is a nul-terminated string
 /// and that it is valid UTF-8 (a superset of ASCII).
+///
+/// After reading your buffer from the i2c device, check the first
+/// byte for the response code.  Then, pass a slice with the rest of
+/// the buffer (without that first byte) to this function to get an
+/// UTF-8 string.
 pub fn string_from_response_data(response: &[u8]) -> Result<String> {
     let mut buf = response.to_owned ();
     turn_off_high_bits (&mut buf);
