@@ -122,7 +122,6 @@ mod tests {
         assert_eq!(response_code(0), ResponseCode::UnknownError);
         assert_eq!(response_code(16), ResponseCode::UnknownError);
         assert_eq!(response_code(156), ResponseCode::UnknownError);
-        assert_eq!(response_code(256), ResponseCode::UnknownError);
     }
     #[test]
     fn parsing_nonzeros_response() {
