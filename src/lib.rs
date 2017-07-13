@@ -15,6 +15,7 @@ use errors::*;
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::LinuxI2CDevice;
 use std::ascii::AsciiExt;
+use std::ffi::CStr;
 use std::thread;
 use std::time::Duration;
 
@@ -97,9 +98,31 @@ pub fn turn_off_high_bits(v: &mut [u8]) {
     }
 }
 
+/// Converts a slice of bytes, as they come raw from the i2c buffer,
+/// into an owned String.  Due to a hardware glitch in the Broadcom
+/// I2C module, we need to strip off the high bit of each byte in the
+/// response strings.
+///
+/// This function ensures that the response is a nul-terminated string
+/// and that it is valid UTF-8 (a superset of ASCII).
+pub fn string_from_response_data(response: &[u8]) -> Result<String> {
+    let mut buf = response.to_owned ();
+    turn_off_high_bits (&mut buf);
+
+    let terminated = CStr::from_bytes_with_nul(&buf)
+        .chain_err(|| ErrorKind::MalformedResponse)?;
+
+    let s = terminated.to_str ()
+        .chain_err(|| ErrorKind::MalformedResponse)?
+        .to_owned ();
+
+    Ok(s)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn turns_off_high_bits() {
         let data: [u8; 11] = [63, 73, 44, 112, 72, 44, 49, 46, 57, 56, 0];
@@ -107,6 +130,35 @@ mod tests {
         turn_off_high_bits(&mut flipped_data);
         assert_eq!(data, flipped_data);
     }
+
+    #[test]
+    fn converts_valid_response_to_string() {
+        // empty nul-terminated string
+        assert_eq!(string_from_response_data(&b"\0"[..]).unwrap(), "");
+
+        // non-empty nul-terminated string
+        assert_eq!(string_from_response_data(&b"hello\0"[..]).unwrap(), "hello");
+
+        // high bit is on in the last character
+        assert_eq!(string_from_response_data(&b"hell\xef\0"[..]).unwrap(), "hello");
+    }
+
+    fn assert_converts_to_malformed_response(data: &[u8]) {
+        let result = string_from_response_data(&data);
+
+        match result {
+            Err(Error(ErrorKind::MalformedResponse, _)) => (),
+            _ => unreachable!()
+        }
+    }
+
+    #[test]
+    fn converts_invalid_response_to_error() {
+        // No nul terminator in either of these
+        assert_converts_to_malformed_response(&b""[..]);
+        assert_converts_to_malformed_response(&b"\xff"[..]);
+    }
+
     #[test]
     fn process_no_data_response_code() {
         assert_eq!(response_code(255), ResponseCode::NoDataExpected);
