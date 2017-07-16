@@ -1,3 +1,4 @@
+//! Create the Error, ErrorKind, ResultExt, and Result types.
 error_chain! {
     errors {
         // The response is not nul-terminated, or it is not valid ASCII/UTF-8
