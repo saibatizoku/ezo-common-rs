@@ -138,7 +138,7 @@ macro_rules! define_command_impl {
 
             fn run (&self, dev: &mut LinuxI2CDevice) -> Result<$response> {
                 let cmd = self.get_command_string();
-                let w = write_to_ezo(dev, cmd.as_bytes())
+                let _w = write_to_ezo(dev, cmd.as_bytes())
                     .chain_err(|| "Error writing to EZO device.")?;
                 let delay = self.get_delay();
                 if delay > 0 {
@@ -163,7 +163,7 @@ macro_rules! define_command_impl {
 
             fn run (&self, dev: &mut LinuxI2CDevice) -> Result<$response> {
                 let cmd = self.get_command_string();
-                let w = write_to_ezo(dev, cmd.as_bytes())
+                let _w = write_to_ezo(dev, cmd.as_bytes())
                     .chain_err(|| "Error writing to EZO device.")?;
                 let delay = self.get_delay();
                 if delay > 0 {
