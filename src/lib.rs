@@ -43,17 +43,19 @@ pub enum BpsRate {
     Bps115200 = 115200,
 }
 
-/// Returns the BpsRate as an unsigned-integer value.
-pub fn baud_rate(rate: &BpsRate) -> u32 {
-    match *rate {
-        BpsRate::Bps300 => BpsRate::Bps300 as u32,
-        BpsRate::Bps1200 => BpsRate::Bps1200 as u32,
-        BpsRate::Bps2400 => BpsRate::Bps2400 as u32,
-        BpsRate::Bps9600 => BpsRate::Bps9600 as u32,
-        BpsRate::Bps19200 => BpsRate::Bps19200 as u32,
-        BpsRate::Bps38400 => BpsRate::Bps38400 as u32,
-        BpsRate::Bps57600 => BpsRate::Bps57600 as u32,
-        BpsRate::Bps115200 => BpsRate::Bps115200 as u32,
+impl BpsRate {
+    /// Returns the BpsRate as a `u32` value.
+    pub fn parse(&self) -> u32 {
+        match *self {
+            BpsRate::Bps300 => BpsRate::Bps300 as u32,
+            BpsRate::Bps1200 => BpsRate::Bps1200 as u32,
+            BpsRate::Bps2400 => BpsRate::Bps2400 as u32,
+            BpsRate::Bps9600 => BpsRate::Bps9600 as u32,
+            BpsRate::Bps19200 => BpsRate::Bps19200 as u32,
+            BpsRate::Bps38400 => BpsRate::Bps38400 as u32,
+            BpsRate::Bps57600 => BpsRate::Bps57600 as u32,
+            BpsRate::Bps115200 => BpsRate::Bps115200 as u32,
+        }
     }
 }
 
@@ -126,14 +128,14 @@ mod tests {
 
     #[test]
     fn converts_baud_rates_to_numbers() {
-        assert_eq!(baud_rate(&BpsRate::Bps300), 300);
-        assert_eq!(baud_rate(&BpsRate::Bps1200), 1200);
-        assert_eq!(baud_rate(&BpsRate::Bps2400), 2400);
-        assert_eq!(baud_rate(&BpsRate::Bps9600), 9600);
-        assert_eq!(baud_rate(&BpsRate::Bps19200), 19200);
-        assert_eq!(baud_rate(&BpsRate::Bps38400), 38400);
-        assert_eq!(baud_rate(&BpsRate::Bps57600), 57600);
-        assert_eq!(baud_rate(&BpsRate::Bps115200), 115200);
+        assert_eq!(BpsRate::Bps300.parse(), 300);
+        assert_eq!(BpsRate::Bps1200.parse(), 1200);
+        assert_eq!(BpsRate::Bps2400.parse(), 2400);
+        assert_eq!(BpsRate::Bps9600.parse(), 9600);
+        assert_eq!(BpsRate::Bps19200.parse(), 19200);
+        assert_eq!(BpsRate::Bps38400.parse(), 38400);
+        assert_eq!(BpsRate::Bps57600.parse(), 57600);
+        assert_eq!(BpsRate::Bps115200.parse(), 115200);
     }
 
     #[test]
