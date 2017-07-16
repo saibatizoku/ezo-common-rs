@@ -43,6 +43,20 @@ pub enum BpsRate {
     Bps115200 = 115200,
 }
 
+/// Returns the BpsRate as an unsigned-integer value.
+pub fn baud_rate(rate: &BpsRate) -> u32 {
+    match *rate {
+        BpsRate::Bps300 => BpsRate::Bps300 as u32,
+        BpsRate::Bps1200 => BpsRate::Bps1200 as u32,
+        BpsRate::Bps2400 => BpsRate::Bps2400 as u32,
+        BpsRate::Bps9600 => BpsRate::Bps9600 as u32,
+        BpsRate::Bps19200 => BpsRate::Bps19200 as u32,
+        BpsRate::Bps38400 => BpsRate::Bps38400 as u32,
+        BpsRate::Bps57600 => BpsRate::Bps57600 as u32,
+        BpsRate::Bps115200 => BpsRate::Bps115200 as u32,
+    }
+}
+
 /// Known response codes from EZO chip interactions.
 #[derive(Clone,Debug,PartialEq,Eq)]
 pub enum ResponseCode {
