@@ -111,6 +111,18 @@ mod tests {
     use super::*;
 
     #[test]
+    fn converts_baud_rates_to_numbers() {
+        assert_eq!(baud_rate(&BpsRate::Bps300), 300);
+        assert_eq!(baud_rate(&BpsRate::Bps1200), 1200);
+        assert_eq!(baud_rate(&BpsRate::Bps2400), 2400);
+        assert_eq!(baud_rate(&BpsRate::Bps9600), 9600);
+        assert_eq!(baud_rate(&BpsRate::Bps19200), 19200);
+        assert_eq!(baud_rate(&BpsRate::Bps38400), 38400);
+        assert_eq!(baud_rate(&BpsRate::Bps57600), 57600);
+        assert_eq!(baud_rate(&BpsRate::Bps115200), 115200);
+    }
+
+    #[test]
     fn turns_off_high_bits() {
         let data: [u8; 11] = [63, 73, 44, 112, 72, 44, 49, 46, 57, 56, 0];
         let mut flipped_data: [u8; 11] = [63, 73, 172, 112, 200, 172, 49, 46, 57, 56, 0];
