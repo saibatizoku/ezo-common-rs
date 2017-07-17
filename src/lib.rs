@@ -264,4 +264,33 @@ mod tests {
         assert_eq!(response_code(16), ResponseCode::UnknownError);
         assert_eq!(response_code(156), ResponseCode::UnknownError);
     }
+    #[test]
+    fn defines_command_with_no_delay_no_response() {
+        define_command! { NewCommand, { "NewCommand".to_string() } }
+        assert_eq!(NewCommand.get_command_string(), "NewCommand");
+    }
+    #[test]
+    fn defines_command_with_delay_no_response() {
+        define_command! { NewCommand, { "NewCommand".to_string() }, 100 }
+        assert_eq!(NewCommand.get_command_string(), "NewCommand");
+        assert_eq!(NewCommand.get_delay(), 100);
+    }
+    #[test]
+    fn defines_command_with_delay_with_response() {
+        define_command! { NewCommand, { "NewCommand".to_string() }, 100, u32, Ok (0u32) }
+        assert_eq!(NewCommand.get_command_string(), "NewCommand");
+        assert_eq!(NewCommand.get_delay(), 100);
+    }
+    #[test]
+    fn defines_data_command_with_delay_no_response() {
+        define_command! { cmd: NewCommand(u8), { format!("NewCommand,{}", cmd) }, 100 }
+        assert_eq!(NewCommand(100).get_command_string(), "NewCommand,100");
+        assert_eq!(NewCommand(100).get_delay(), 100);
+    }
+    #[test]
+    fn defines_data_command_with_delay_with_response() {
+        define_command! { cmd: NewCommand(u8), { format!("NewCommand,{}", cmd) }, 100 , u32, Ok (0u32) }
+        assert_eq!(NewCommand(0).get_command_string(), "NewCommand,0");
+        assert_eq!(NewCommand(0).get_delay(), 100);
+    }
 }
