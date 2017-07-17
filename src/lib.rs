@@ -161,7 +161,7 @@ macro_rules! define_command_impl {
         }
     };
     ($name:ident, $command_string:block, $delay:expr,
-     $resp:ident : $response:ty, $run_func:expr) => {
+     $resp:ident : $response:ty, $run_func:block) => {
         impl Command for $name {
             type Response = $response;
 
@@ -212,7 +212,7 @@ macro_rules! define_command_impl {
         }
     };
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
-     $resp:ident : $response:ty, $run_func:expr) => {
+     $resp:ident : $response:ty, $run_func:block) => {
         impl Command for $name {
             type Response = $response;
 
@@ -305,7 +305,7 @@ macro_rules! define_command_impl {
 /// define_command! {
 ///     doc: "docstring here",
 ///     ControlCommand, { "cmd".to_string() }, 1000,
-///     data: u32, Ok (0u32)
+///     data: u32, { Ok (0u32) }
 /// }
 /// assert_eq!(ControlCommand.get_command_string(), "cmd");
 /// assert_eq!(ControlCommand.get_delay(), 1000);
@@ -348,7 +348,7 @@ macro_rules! define_command_impl {
 /// define_command! {
 ///     doc: "docstring here",
 ///     cmd: InputCommand(u8), { format!("cmd,{}", cmd) }, 140,
-///     data: (), Ok (())
+///     data: (), { Ok (()) }
 /// }
 /// assert_eq!(InputCommand(0x7F).get_command_string(), "cmd,127");
 /// assert_eq!(InputCommand(0x7F).get_delay(), 140);
@@ -413,7 +413,7 @@ macro_rules! define_command_impl {
 /// # fn main() {
 /// define_command! {
 ///     ControlCommand, { "nodocscmd".to_string() }, 900,
-///     data: f32, Ok (10_0f32)
+///     data: f32, { Ok (10_0f32) }
 /// }
 /// assert_eq!(ControlCommand.get_command_string(), "nodocscmd");
 /// assert_eq!(ControlCommand.get_delay(), 900);
@@ -454,7 +454,7 @@ macro_rules! define_command_impl {
 /// # fn main() {
 /// define_command! {
 ///     cmd: InputCommand(String), { format!("cmd,{}", cmd) }, 40,
-///     data: (), Ok (())
+///     data: (), { Ok (()) }
 /// }
 /// assert_eq!(InputCommand("s".to_string()).get_command_string(), "cmd,s");
 /// assert_eq!(InputCommand("s".to_string()).get_delay(), 40);
@@ -490,7 +490,7 @@ macro_rules! define_command {
     //   data: ResponseType, resp_expr
     // }
     (doc: $doc:tt, $name:ident, $command_string:block, $delay:expr,
-     $resp:ident : $response:ty, $run_func:expr) => {
+     $resp:ident : $response:ty, $run_func:block) => {
         #[doc=$doc]
         define_command!{
             $name, $command_string, $delay,
@@ -513,7 +513,7 @@ macro_rules! define_command {
     //   data: ResponseType, resp_expr
     // }
     (doc: $doc:tt, $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
-     $resp:ident : $response:ty, $run_func:expr) => {
+     $resp:ident : $response:ty, $run_func:block) => {
         #[doc=$doc]
         define_command!{
             $cmd: $name($data), $command_string, $delay,
@@ -544,7 +544,7 @@ macro_rules! define_command {
     //   data: ResponseType, resp_expr
     // }
     ($name:ident, $command_string:block, $delay:expr,
-     $resp:ident : $response:ty, $run_func:expr) => {
+     $resp:ident : $response:ty, $run_func:block) => {
         pub struct $name;
 
         define_command_impl!($name, $response, $command_string, $delay, $run_func);
@@ -562,7 +562,7 @@ macro_rules! define_command {
     //   data: ResponseType, resp_expr
     // }
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
-     $resp:ident : $response:ty, $run_func:expr) => {
+     $resp:ident : $response:ty, $run_func:block) => {
         pub struct $name(pub $data);
 
         define_command_impl! {
