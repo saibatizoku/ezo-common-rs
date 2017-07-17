@@ -18,6 +18,9 @@ use std::ffi::CStr;
 use std::thread;
 use std::time::Duration;
 
+/// Default buffer size for ASCII data responses.
+pub const MAX_DATA: usize = 42;
+
 /// I2C command for the EZO chip.
 pub trait Command {
     type Response;
@@ -157,6 +160,32 @@ macro_rules! define_command_impl {
             }
         }
     };
+    ($name:ident, $command_string:block, $delay:expr,
+     $resp:ident : $response:ty, $run_func:expr) => {
+        impl Command for $name {
+            type Response = $response;
+
+            fn get_command_string(&self) -> String {
+                $command_string
+            }
+
+            fn get_delay(&self) -> u64 {
+                $delay
+            }
+
+            fn run (&self, dev: &mut LinuxI2CDevice) -> Result<$response> {
+                let cmd = self.get_command_string();
+                let _w = write_to_ezo(dev, cmd.as_bytes())
+                    .chain_err(|| "Error writing to EZO device.")?;
+                let delay = self.get_delay();
+                if delay > 0 {
+                    thread::sleep(Duration::from_millis(delay));
+                };
+                let mut $resp = [0u8; MAX_DATA];
+                $run_func
+            }
+        }
+    };
     ($cmd:ident : $name:ident, $response:ty, $command_string:block, $delay:expr, $run_func:expr) => {
         impl Command for $name {
             type Response = $response;
@@ -178,6 +207,33 @@ macro_rules! define_command_impl {
                 if delay > 0 {
                     thread::sleep(Duration::from_millis(delay));
                 };
+                $run_func
+            }
+        }
+    };
+    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
+     $resp:ident : $response:ty, $run_func:expr) => {
+        impl Command for $name {
+            type Response = $response;
+
+            fn get_command_string(&self) -> String {
+                let $cmd = &self.0;
+                $command_string
+            }
+
+            fn get_delay(&self) -> u64 {
+                $delay
+            }
+
+            fn run (&self, dev: &mut LinuxI2CDevice) -> Result<$response> {
+                let cmd = self.get_command_string();
+                let _w = write_to_ezo(dev, cmd.as_bytes())
+                    .chain_err(|| "Error writing to EZO device.")?;
+                let delay = self.get_delay();
+                if delay > 0 {
+                    thread::sleep(Duration::from_millis(delay));
+                };
+                let mut $resp = [0u8; MAX_DATA];
                 $run_func
             }
         }
@@ -264,7 +320,7 @@ macro_rules! define_command_impl {
 /// # use std::thread;
 /// # use std::time::Duration;
 /// # use i2cdev::linux::LinuxI2CDevice;
-/// # use ezo_common::{Command, write_to_ezo};
+/// # use ezo_common::{MAX_DATA, Command, write_to_ezo};
 /// # use ezo_common::errors::*;
 /// #
 /// # fn main() {
@@ -285,7 +341,7 @@ macro_rules! define_command_impl {
 /// # use std::thread;
 /// # use std::time::Duration;
 /// # use i2cdev::linux::LinuxI2CDevice;
-/// # use ezo_common::{Command, write_to_ezo};
+/// # use ezo_common::{MAX_DATA, Command, write_to_ezo};
 /// # use ezo_common::errors::*;
 /// #
 /// # fn main() {
@@ -392,7 +448,7 @@ macro_rules! define_command_impl {
 /// # use std::thread;
 /// # use std::time::Duration;
 /// # use i2cdev::linux::LinuxI2CDevice;
-/// # use ezo_common::{Command, write_to_ezo};
+/// # use ezo_common::{MAX_DATA, Command, write_to_ezo};
 /// # use ezo_common::errors::*;
 /// #
 /// # fn main() {
@@ -509,7 +565,10 @@ macro_rules! define_command {
      $resp:ident : $response:ty, $run_func:expr) => {
         pub struct $name(pub $data);
 
-        define_command_impl!($cmd: $name, $response, $command_string, $delay, $run_func);
+        define_command_impl! {
+            $cmd: $name($data), $command_string, $delay,
+            $resp: $response, $run_func
+        }
     };
 }
 
