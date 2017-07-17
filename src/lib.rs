@@ -483,6 +483,12 @@ pub fn string_from_response_data(response: &[u8]) -> Result<String> {
 
 /// Short-hand for writing valid commands
 ///
+/// Implement your own version of `MAX_DATA` wherever you are implementing
+/// the `define_command!` macro, to override.
+///
+/// Implement your own version of `trait Command`  wherever you are implementing
+/// the `define_command!` macro, to override.
+///
 /// ## Examples
 ///
 /// ### COMMANDS WITH DOCS
