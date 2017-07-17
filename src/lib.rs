@@ -18,7 +18,6 @@ use std::ffi::CStr;
 use std::thread;
 use std::time::Duration;
 
-#[cfg(test)]
 /// I2C command for the EZO chip.
 pub trait Command {
     type Response;
@@ -185,64 +184,322 @@ macro_rules! define_command_impl {
     };
 }
 
+/// Short-hand for writing valid commands
+///
+/// ## Examples
+///
+/// ### COMMANDS WITH DOCS
+/// #### Commands with docs, no delay, and no response
+///
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// # fn main() {
+/// define_command! {
+///     doc: "docstring here",
+///     ControlCommand, { "cmd".to_string() }
+/// }
+/// assert_eq!(ControlCommand.get_command_string(), "cmd");
+/// assert_eq!(ControlCommand.get_delay(), 0);
+/// # }
+/// ```
+///
+/// #### Commands with docs, delay, and no response
+///
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// # fn main() {
+/// define_command! {
+///     doc: "docstring here",
+///     ControlCommand, { "cmd".to_string() }, 1000
+/// }
+/// assert_eq!(ControlCommand.get_command_string(), "cmd");
+/// assert_eq!(ControlCommand.get_delay(), 1000);
+/// # }
+/// ```
+///
+/// #### Commands with docs, delay, and response
+///
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// # fn main() {
+/// define_command! {
+///     doc: "docstring here",
+///     ControlCommand, { "cmd".to_string() }, 1000,
+///     data: u32, Ok (0u32)
+/// }
+/// assert_eq!(ControlCommand.get_command_string(), "cmd");
+/// assert_eq!(ControlCommand.get_delay(), 1000);
+/// # }
+/// ```
+///
+/// #### Commands with docs, user input, delay and no response
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// # fn main() {
+/// define_command! {
+///     doc: "docstring here",
+///     cmd: InputCommand(f32), { format!("cmd,{:.*}", 2, cmd) }, 0
+/// }
+/// assert_eq!(InputCommand(3.285).get_command_string(), "cmd,3.29");
+/// assert_eq!(InputCommand(3.285).get_delay(), 0);
+/// # }
+/// ```
+///
+/// #### Commands with docs, user input, delay and response
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// # fn main() {
+/// define_command! {
+///     doc: "docstring here",
+///     cmd: InputCommand(u8), { format!("cmd,{}", cmd) }, 140,
+///     data: (), Ok (())
+/// }
+/// assert_eq!(InputCommand(0x7F).get_command_string(), "cmd,127");
+/// assert_eq!(InputCommand(0x7F).get_delay(), 140);
+/// # }
+/// ```
+///
+/// ### COMMANDS WITHOUT DOCS
+/// #### Commands with no delay, and no response
+///
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// # fn main() {
+/// define_command! {
+///     ControlCommand, { "undocumented_cmd".to_string() }
+/// }
+/// assert_eq!(ControlCommand.get_command_string(), "undocumented_cmd");
+/// assert_eq!(ControlCommand.get_delay(), 0);
+/// # }
+/// ```
+///
+/// #### Commands with delay, and no response
+///
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// # fn main() {
+/// define_command! {
+///     ControlCommand, { "no_docs_cmd".to_string() }, 100
+/// }
+/// assert_eq!(ControlCommand.get_command_string(), "no_docs_cmd");
+/// assert_eq!(ControlCommand.get_delay(), 100);
+/// # }
+/// ```
+///
+/// #### Commands with delay, and response
+///
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// # fn main() {
+/// define_command! {
+///     ControlCommand, { "nodocscmd".to_string() }, 900,
+///     data: f32, Ok (10_0f32)
+/// }
+/// assert_eq!(ControlCommand.get_command_string(), "nodocscmd");
+/// assert_eq!(ControlCommand.get_delay(), 900);
+/// # }
+/// ```
+///
+/// #### Commands user input, delay and no response
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// # fn main() {
+/// define_command! {
+///     cmd: InputCommand(f32), { format!("cmd,{:.*}", 1, cmd) }, 5
+/// }
+/// assert_eq!(InputCommand(3.285).get_command_string(), "cmd,3.3");
+/// assert_eq!(InputCommand(3.285).get_delay(), 5);
+/// # }
+/// ```
+///
+/// #### Commands user input, delay and response
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// # fn main() {
+/// define_command! {
+///     cmd: InputCommand(String), { format!("cmd,{}", cmd) }, 40,
+///     data: (), Ok (())
+/// }
+/// assert_eq!(InputCommand("s".to_string()).get_command_string(), "cmd,s");
+/// assert_eq!(InputCommand("s".to_string()).get_delay(), 40);
+/// # }
+/// ```
 #[macro_export]
 macro_rules! define_command {
+    // {
+    //   doc: "docstring",
+    //   Name, cmd_string_block, delay
+    // }
     (doc: $doc:tt, $name:ident, $command_string:block, $delay:expr) => {
         #[doc=$doc]
         pub struct $name;
 
         define_command_impl!($name, (), $command_string, $delay, Ok (()) );
     };
+    // {
+    //   doc: "docstring",
+    //   Name, cmd_string_block
+    // }
     (doc: $doc:tt, $name:ident, $command_string:block) => {
         #[doc=$doc]
         pub struct $name;
 
         define_command_impl!($name, (), $command_string, 0, Ok (()) );
     };
-    (doc: $doc:tt, $name:ident, $command_string:block, $delay:expr, $response:ty, $run_func:expr) => {
+    // {
+    //   doc: "docstring",
+    //   Name, cmd_string_block, delay,
+    //   data: ResponseType, resp_expr
+    // }
+    (doc: $doc:tt, $name:ident, $command_string:block, $delay:expr,
+     $resp:ident : $response:ty, $run_func:expr) => {
         #[doc=$doc]
         pub struct $name;
 
         define_command_impl!($name, $response, $command_string, $delay, $run_func);
     };
+    // {
+    //   Name, cmd_string_block, delay
+    // }
     ($name:ident, $command_string:block, $delay:expr) => {
         pub struct $name;
 
         define_command_impl!($name, (), $command_string, $delay, Ok (()) );
     };
+    // {
+    //   Name, cmd_string_block
+    // }
     ($name:ident, $command_string:block) => {
         pub struct $name;
 
         define_command_impl!($name, (), $command_string, 0, Ok (()) );
     };
-    ($name:ident, $command_string:block, $delay:expr, $response:ty, $run_func:expr) => {
+    // {
+    //   Name, cmd_string_block, delay,
+    //   data: ResponseType, resp_expr
+    // }
+    ($name:ident, $command_string:block, $delay:expr,
+     $resp:ident : $response:ty, $run_func:expr) => {
         pub struct $name;
 
         define_command_impl!($name, $response, $command_string, $delay, $run_func);
     };
+    // {
+    //   doc: "docstring",
+    //   cmd: Name(type), cmd_string_block, delay
+    // }
     (doc: $doc:tt, $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
         #[doc=$doc]
         pub struct $name(pub $data);
 
         define_command_impl!($cmd: $name, (), $command_string, $delay, Ok (()) );
     };
-    (doc: $doc:tt, $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, $response:ty, $run_func:expr) => {
+    // {
+    //   doc: "docstring",
+    //   cmd: Name(type), cmd_string_block, delay,
+    //   data: ResponseType, resp_expr
+    // }
+    (doc: $doc:tt, $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
+     $resp:ident : $response:ty, $run_func:expr) => {
         #[doc=$doc]
         pub struct $name(pub $data);
 
         define_command_impl!($cmd: $name, $response, $command_string, $delay, $run_func);
     };
+    // {
+    //   cmd: Name(type), cmd_string_block, delay
+    // }
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
         pub struct $name(pub $data);
 
         define_command_impl!($cmd: $name, (), $command_string, $delay, Ok (()) );
     };
-    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, $response:ty, $run_func:expr) => {
-        pub struct $name(pub $data);
-
-        define_command_impl!($cmd: $name, $response, $command_string, $delay, $run_func);
-    };
-    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, $data:ident : $response:ty, $run_func:expr) => {
+    // {
+    //   cmd: Name(type), cmd_string_block, delay,
+    //   data: ResponseType, resp_expr
+    // }
+    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
+     $resp:ident : $response:ty, $run_func:expr) => {
         pub struct $name(pub $data);
 
         define_command_impl!($cmd: $name, $response, $command_string, $delay, $run_func);
@@ -323,64 +580,5 @@ mod tests {
         assert_eq!(response_code(0), ResponseCode::UnknownError);
         assert_eq!(response_code(16), ResponseCode::UnknownError);
         assert_eq!(response_code(156), ResponseCode::UnknownError);
-    }
-    #[test]
-    fn defines_command_with_no_delay_no_response() {
-        define_command! { NewCommand, { "NewCommand".to_string() } }
-        assert_eq!(NewCommand.get_command_string(), "NewCommand");
-    }
-    #[test]
-    fn defines_command_with_delay_no_response() {
-        define_command! { NewCommand, { "NewCommand".to_string() }, 100 }
-        assert_eq!(NewCommand.get_command_string(), "NewCommand");
-        assert_eq!(NewCommand.get_delay(), 100);
-    }
-    #[test]
-    fn defines_command_with_delay_with_response() {
-        define_command! { NewCommand, { "NewCommand".to_string() }, 100, u32, Ok (0u32) }
-        assert_eq!(NewCommand.get_command_string(), "NewCommand");
-        assert_eq!(NewCommand.get_delay(), 100);
-    }
-    #[test]
-    fn defines_command_with_no_delay_no_response_with_docs() {
-        define_command! { doc: "docs", NewCommand, { "NewCommand".to_string() } }
-        assert_eq!(NewCommand.get_command_string(), "NewCommand");
-    }
-    #[test]
-    fn defines_command_with_delay_no_response_with_docs() {
-        define_command! { doc: "docs", NewCommand, { "NewCommand".to_string() }, 100 }
-        assert_eq!(NewCommand.get_command_string(), "NewCommand");
-        assert_eq!(NewCommand.get_delay(), 100);
-    }
-    #[test]
-    fn defines_command_with_delay_with_response_with_docs() {
-        define_command! { doc: "docs", NewCommand, { "NewCommand".to_string() }, 100, u32, Ok (0u32) }
-        assert_eq!(NewCommand.get_command_string(), "NewCommand");
-        assert_eq!(NewCommand.get_delay(), 100);
-    }
-
-    #[test]
-    fn defines_data_command_with_delay_no_response() {
-        define_command! { cmd: NewCommand(u8), { format!("NewCommand,{}", cmd) }, 100 }
-        assert_eq!(NewCommand(100).get_command_string(), "NewCommand,100");
-        assert_eq!(NewCommand(100).get_delay(), 100);
-    }
-    #[test]
-    fn defines_data_command_with_delay_with_response() {
-        define_command! { cmd: NewCommand(u8), { format!("NewCommand,{}", cmd) }, 100 , u32, Ok (0u32) }
-        assert_eq!(NewCommand(0).get_command_string(), "NewCommand,0");
-        assert_eq!(NewCommand(0).get_delay(), 100);
-    }
-    #[test]
-    fn defines_data_command_with_delay_no_response_with_docs() {
-        define_command! { doc: "docs", cmd: NewCommand(u8), { format!("NewCommand,{}", cmd) }, 100 }
-        assert_eq!(NewCommand(100).get_command_string(), "NewCommand,100");
-        assert_eq!(NewCommand(100).get_delay(), 100);
-    }
-    #[test]
-    fn defines_data_command_with_delay_with_response_with_docs() {
-        define_command! { doc: "docs", cmd: NewCommand(u8), { format!("NewCommand,{}", cmd) }, 100 , u32, Ok (0u32) }
-        assert_eq!(NewCommand(0).get_command_string(), "NewCommand,0");
-        assert_eq!(NewCommand(0).get_delay(), 100);
     }
 }
