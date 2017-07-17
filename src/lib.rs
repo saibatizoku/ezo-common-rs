@@ -18,6 +18,16 @@ use std::ffi::CStr;
 use std::thread;
 use std::time::Duration;
 
+#[cfg(test)]
+/// I2C command for the EZO chip.
+pub trait Command {
+    type Response;
+
+    fn get_command_string (&self) -> String;
+    fn get_delay (&self) -> u64;
+    fn run(&self, dev: &mut LinuxI2CDevice) -> Result<Self::Response>;
+}
+
 /// Determines the response code sent by the EZO chip.
 pub fn response_code(code_byte: u8) -> ResponseCode {
     use self::ResponseCode::*;
@@ -177,12 +187,27 @@ macro_rules! define_command_impl {
 
 #[macro_export]
 macro_rules! define_command {
-    ($name:ident, $response:ty, $command_string:block, $delay:expr, $run_func:expr) => {
+    ($name:ident, $command_string:block, $delay:expr) => {
+        pub struct $name;
+
+        define_command_impl!($name, (), $command_string, $delay, Ok (()) );
+    };
+    ($name:ident, $command_string:block) => {
+        pub struct $name;
+
+        define_command_impl!($name, (), $command_string, 0, Ok (()) );
+    };
+    ($name:ident, $command_string:block, $delay:expr, $response:ty, $run_func:expr) => {
         pub struct $name;
 
         define_command_impl!($name, $response, $command_string, $delay, $run_func);
     };
-    ($cmd:ident : $name:ident($data:ty), $response:ty, $command_string:block, $delay:expr, $run_func:expr) => {
+    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
+        pub struct $name(pub $data);
+
+        define_command_impl!($cmd: $name, (), $command_string, $delay, Ok (()) );
+    };
+    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, $response:ty, $run_func:expr) => {
         pub struct $name(pub $data);
 
         define_command_impl!($cmd: $name, $response, $command_string, $delay, $run_func);
