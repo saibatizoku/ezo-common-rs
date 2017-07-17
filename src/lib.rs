@@ -406,25 +406,23 @@ macro_rules! define_command_impl {
 /// ```
 #[macro_export]
 macro_rules! define_command {
-    // {
-    //   doc: "docstring",
-    //   Name, cmd_string_block, delay
-    // }
-    (doc: $doc:tt, $name:ident, $command_string:block, $delay:expr) => {
-        #[doc=$doc]
-        pub struct $name;
-
-        define_command_impl!($name, (), $command_string, $delay, Ok (()) );
-    };
+    // DOCUMENTED COMMANDS
+    // ===================
     // {
     //   doc: "docstring",
     //   Name, cmd_string_block
     // }
     (doc: $doc:tt, $name:ident, $command_string:block) => {
         #[doc=$doc]
-        pub struct $name;
-
-        define_command_impl!($name, (), $command_string, 0, Ok (()) );
+        define_command!($name, $command_string);
+    };
+    // {
+    //   doc: "docstring",
+    //   Name, cmd_string_block, delay
+    // }
+    (doc: $doc:tt, $name:ident, $command_string:block, $delay:expr) => {
+        #[doc=$doc]
+        define_command!($name, $command_string, $delay);
     };
     // {
     //   doc: "docstring",
@@ -434,35 +432,10 @@ macro_rules! define_command {
     (doc: $doc:tt, $name:ident, $command_string:block, $delay:expr,
      $resp:ident : $response:ty, $run_func:expr) => {
         #[doc=$doc]
-        pub struct $name;
-
-        define_command_impl!($name, $response, $command_string, $delay, $run_func);
-    };
-    // {
-    //   Name, cmd_string_block, delay
-    // }
-    ($name:ident, $command_string:block, $delay:expr) => {
-        pub struct $name;
-
-        define_command_impl!($name, (), $command_string, $delay, Ok (()) );
-    };
-    // {
-    //   Name, cmd_string_block
-    // }
-    ($name:ident, $command_string:block) => {
-        pub struct $name;
-
-        define_command_impl!($name, (), $command_string, 0, Ok (()) );
-    };
-    // {
-    //   Name, cmd_string_block, delay,
-    //   data: ResponseType, resp_expr
-    // }
-    ($name:ident, $command_string:block, $delay:expr,
-     $resp:ident : $response:ty, $run_func:expr) => {
-        pub struct $name;
-
-        define_command_impl!($name, $response, $command_string, $delay, $run_func);
+        define_command!{
+            $name, $command_string, $delay,
+            $resp: $response, $run_func
+        }
     };
     // {
     //   doc: "docstring",
@@ -485,6 +458,35 @@ macro_rules! define_command {
         pub struct $name(pub $data);
 
         define_command_impl!($cmd: $name, $response, $command_string, $delay, $run_func);
+    };
+
+    // UNDOCUMENTED COMMANDS
+    // ===================
+    // {
+    //   Name, cmd_string_block
+    // }
+    ($name:ident, $command_string:block) => {
+        pub struct $name;
+
+        define_command_impl!($name, (), $command_string, 0, Ok (()) );
+    };
+    // {
+    //   Name, cmd_string_block, delay
+    // }
+    ($name:ident, $command_string:block, $delay:expr) => {
+        pub struct $name;
+
+        define_command_impl!($name, (), $command_string, $delay, Ok (()) );
+    };
+    // {
+    //   Name, cmd_string_block, delay,
+    //   data: ResponseType, resp_expr
+    // }
+    ($name:ident, $command_string:block, $delay:expr,
+     $resp:ident : $response:ty, $run_func:expr) => {
+        pub struct $name;
+
+        define_command_impl!($name, $response, $command_string, $delay, $run_func);
     };
     // {
     //   cmd: Name(type), cmd_string_block, delay
