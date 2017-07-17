@@ -242,6 +242,11 @@ macro_rules! define_command {
 
         define_command_impl!($cmd: $name, $response, $command_string, $delay, $run_func);
     };
+    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, $data:ident : $response:ty, $run_func:expr) => {
+        pub struct $name(pub $data);
+
+        define_command_impl!($cmd: $name, $response, $command_string, $delay, $run_func);
+    };
 }
 
 
