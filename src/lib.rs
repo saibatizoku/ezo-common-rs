@@ -376,6 +376,109 @@ pub fn string_from_response_data(response: &[u8]) -> Result<String> {
     Ok(s)
 }
 
+/// Short-hand for writing valid `impl` of commands
+///
+/// Implement your own version of `MAX_DATA` wherever you are implementing
+/// the `define_command!` macro, to override.
+///
+/// Implement your own version of `trait Command`  wherever you are implementing
+/// the `define_command!` macro, to override.
+///
+/// ## Examples
+///
+/// ### Simple commands with no response
+///
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{MAX_DATA, Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// pub struct ControlCommand;
+///
+/// # fn main() {
+/// define_command_impl! {
+///     ControlCommand, { "cmd".to_string() }, 0
+/// }
+/// assert_eq!(ControlCommand.get_command_string(), "cmd");
+/// assert_eq!(ControlCommand.get_delay(), 0);
+/// # }
+/// ```
+///
+/// ### Input commands with no response
+///
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{MAX_DATA, Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// pub struct InputCommand(u32);
+///
+/// # fn main() {
+/// define_command_impl! {
+///     cmd: InputCommand(u32), { format!("cmd,{}", cmd) }, 0
+/// }
+/// assert_eq!(InputCommand(43).get_command_string(), "cmd,43");
+/// assert_eq!(InputCommand(43).get_delay(), 0);
+/// # }
+/// ```
+///
+/// ### Simple commands **with** response
+///
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{MAX_DATA, Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// pub struct ControlCommand;
+///
+/// # fn main() {
+/// define_command_impl! {
+///     ControlCommand, { "cmd".to_string() }, 0,
+///     resp: u32, { Ok (0u32) }
+/// }
+/// assert_eq!(ControlCommand.get_command_string(), "cmd");
+/// assert_eq!(ControlCommand.get_delay(), 0);
+/// # }
+/// ```
+///
+/// ### Input commands **with** response
+///
+/// ```rust
+/// # #[macro_use] extern crate ezo_common;
+/// # extern crate error_chain;
+/// # extern crate i2cdev;
+/// # use std::thread;
+/// # use std::time::Duration;
+/// # use i2cdev::linux::LinuxI2CDevice;
+/// # use ezo_common::{MAX_DATA, Command, write_to_ezo};
+/// # use ezo_common::errors::*;
+/// #
+/// pub struct InputCommand(u32);
+///
+/// # fn main() {
+/// define_command_impl! {
+///     cmd: InputCommand(u32), { format!("cmd,{}", cmd) }, 0,
+///     resp: (), { Ok ( () ) }
+/// }
+/// assert_eq!(InputCommand(43).get_command_string(), "cmd,43");
+/// assert_eq!(InputCommand(43).get_delay(), 0);
+/// # }
+/// ```
 #[macro_export] macro_rules! define_command_impl {
     ($name:ident, $response:ty, $command_string:block, $delay:expr, $run_func:expr) => {
         impl Command for $name {
