@@ -135,6 +135,53 @@ pub fn string_from_response_data(response: &[u8]) -> Result<String> {
 /// `define_command_impl!`.
 #[macro_export]
 macro_rules! command_run_fn {
+    (Ack) => {
+        fn run (&self, dev: &mut LinuxI2CDevice) -> Result<()> {
+            let cmd = self.get_command_string();
+
+            let _w = write_to_ezo(dev, cmd.as_bytes())
+                .chain_err(|| "Error writing to EZO device.")?;
+
+            let delay = self.get_delay();
+
+            if delay > 0 {
+                thread::sleep(Duration::from_millis(delay));
+            };
+
+            let mut data_buffer = [0u8; MAX_DATA];
+
+            let _r = dev.read(&mut data_buffer)
+                .chain_err(|| ErrorKind::I2CRead)?;
+
+            match response_code(data_buffer[0]) {
+                ResponseCode::Success => Ok(()),
+
+                ResponseCode::Pending => Err(ErrorKind::PendingResponse.into()),
+
+                ResponseCode::DeviceError => Err(ErrorKind::DeviceErrorResponse.into()),
+
+                ResponseCode::NoDataExpected => Err(ErrorKind::NoDataExpectedResponse.into()),
+
+                ResponseCode::UnknownError => Err(ErrorKind::MalformedResponse.into()),
+            }
+        }
+    };
+    (NoAck) => {
+        fn run (&self, dev: &mut LinuxI2CDevice) -> Result<()> {
+            let cmd = self.get_command_string();
+
+            let _w = write_to_ezo(dev, cmd.as_bytes())
+                .chain_err(|| "Error writing to EZO device.")?;
+
+            let delay = self.get_delay();
+
+            if delay > 0 {
+                thread::sleep(Duration::from_millis(delay));
+            };
+
+            Ok (())
+        }
+    };
     ($resp:ident : $response:ty, $run_func:block) => {
         fn run (&self, dev: &mut LinuxI2CDevice) -> Result<$response> {
             let cmd = self.get_command_string();
@@ -175,7 +222,7 @@ macro_rules! command_run_fn {
             let $resp = resp_string?;
             $run_func
         }
-     }
+    };
 }
 
 /// Short-hand for writing valid `impl` of commands
