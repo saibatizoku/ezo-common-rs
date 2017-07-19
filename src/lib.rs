@@ -5,6 +5,8 @@
 
 #![recursion_limit = "1024"]
 
+#![feature(inclusive_range_syntax)]
+
 #[macro_use] extern crate error_chain;
 extern crate i2cdev;
 
@@ -96,9 +98,12 @@ pub fn write_to_ezo(dev: &mut LinuxI2CDevice, cmd: &[u8]) -> Result<()> {
 /// Read the buffered response from the EZO chip.
 pub fn read_raw_buffer(dev: &mut LinuxI2CDevice, max_data: usize) -> Result<Vec<u8>> {
     let mut data_buffer = vec![0u8; max_data];
-    dev.read(&mut data_buffer)
+    let _ = dev.read(&mut data_buffer)
         .chain_err(|| "Error reading from device")?;
-    Ok(data_buffer)
+    match data_buffer.iter().position(|&c| c == 0) {
+        Some(len) => Ok(Vec::from(&data_buffer[...len])),
+        _ => Ok(data_buffer),
+    }
 }
 
 /// Turns off the high bit in each of the bytes of `v`.  Raspberry Pi
