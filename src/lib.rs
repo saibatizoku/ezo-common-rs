@@ -276,7 +276,7 @@ macro_rules! define_command {
     // {
     //   doc: "docstring",
     //   Name, cmd_string_block, delay,
-    //   data: ResponseType, resp_expr
+    //   _data: ResponseType, resp_expr
     // }
     (doc: $doc:tt,
      $name:ident, $command_string:block, $delay:expr,
@@ -301,7 +301,7 @@ macro_rules! define_command {
     // {
     //   doc: "docstring",
     //   cmd: Name(type), cmd_string_block, delay,
-    //   data: ResponseType, resp_expr
+    //   _data: ResponseType, resp_expr
     // }
     (doc: $doc:tt,
      $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
@@ -325,7 +325,7 @@ macro_rules! define_command {
     };
     // {
     //   Name, cmd_string_block, delay,
-    //   data: ResponseType, resp_expr
+    //   _data: ResponseType, resp_expr
     // }
     ($name:ident, $command_string:block, $delay:expr,
      $resp:ident : $response:ty, $run_func:block) => {
@@ -348,7 +348,7 @@ macro_rules! define_command {
     };
     // {
     //   cmd: Name(type), cmd_string_block, delay,
-    //   data: ResponseType, resp_expr
+    //   _data: ResponseType, resp_expr
     // }
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
      $resp:ident : $response:ty, $run_func:block) => {
@@ -470,7 +470,7 @@ mod tests {
 
         define_command_impl! {
             ControlCommand, { "cmd".to_string() }, 0,
-            resp: u32, { Ok (0u32) }
+            _resp: u32, { Ok (0u32) }
         }
         assert_eq!(ControlCommand.get_command_string(), "cmd");
         assert_eq!(ControlCommand.get_delay(), 0);
@@ -482,7 +482,7 @@ mod tests {
 
         define_command_impl! {
             cmd: InputCommand(u32), { format!("cmd,{}", cmd) }, 0,
-            resp: (), { Ok ( () ) }
+            _resp: (), { Ok ( () ) }
         }
         assert_eq!(InputCommand(43).get_command_string(), "cmd,43");
         assert_eq!(InputCommand(43).get_delay(), 0);
@@ -510,7 +510,7 @@ mod tests {
     fn macro_creates_simple_command_with_response() {
         define_command! {
             ControlCommand, { "cmd".to_string() }, 1000,
-            data: u32, { Ok (0u32) }
+            _data: u32, { Ok (0u32) }
         }
         assert_eq!(ControlCommand.get_command_string(), "cmd");
         assert_eq!(ControlCommand.get_delay(), 1000);
@@ -520,7 +520,7 @@ mod tests {
     fn macro_creates_input_command_with_response() {
         define_command! {
             cmd: InputCommand(u8), { format!("cmd,{}", cmd) }, 140,
-            data: (), { Ok (()) }
+            _data: (), { Ok (()) }
         }
         assert_eq!(InputCommand(0x7F).get_command_string(), "cmd,127");
         assert_eq!(InputCommand(0x7F).get_delay(), 140);
@@ -551,7 +551,7 @@ mod tests {
         define_command! {
             doc: "docstring here",
             ControlCommand, { "cmd".to_string() }, 1000,
-            data: u32, { Ok (0u32) }
+            _data: u32, { Ok (0u32) }
         }
         assert_eq!(ControlCommand.get_command_string(), "cmd");
         assert_eq!(ControlCommand.get_delay(), 1000);
@@ -562,7 +562,7 @@ mod tests {
         define_command! {
             doc: "docstring here",
             cmd: InputCommand(u8), { format!("cmd,{}", cmd) }, 140,
-            data: (), { Ok (()) }
+            _data: (), { Ok (()) }
         }
         assert_eq!(InputCommand(0x7F).get_command_string(), "cmd,127");
         assert_eq!(InputCommand(0x7F).get_delay(), 140);
