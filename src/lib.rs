@@ -95,17 +95,6 @@ pub fn write_to_ezo(dev: &mut LinuxI2CDevice, cmd: &[u8]) -> Result<()> {
     Ok(())
 }
 
-/// Read the buffered response from the EZO chip.
-pub fn read_raw_buffer(dev: &mut LinuxI2CDevice, max_data: usize) -> Result<Vec<u8>> {
-    let mut data_buffer = vec![0u8; max_data];
-    let _ = dev.read(&mut data_buffer)
-        .chain_err(|| "Error reading from device")?;
-    match data_buffer.iter().position(|&c| c == 0) {
-        Some(len) => Ok(Vec::from(&data_buffer[...len])),
-        _ => Ok(data_buffer),
-    }
-}
-
 /// Turns off the high bit in each of the bytes of `v`.  Raspberry Pi
 /// for some reason outputs i2c buffers with some of the high bits
 /// turned on.
