@@ -443,7 +443,7 @@ mod tests {
     }
 
     #[test]
-    fn macro_creates_impl_for_simple_command() {
+    fn macro_creates_impl_for_noack_simple_command() {
         pub struct ControlCommand;
 
         define_command_impl! {
@@ -454,7 +454,7 @@ mod tests {
     }
 
     #[test]
-    fn macro_creates_impl_for_input_command() {
+    fn macro_creates_impl_for_noack_input_command() {
         pub struct InputCommand(u32);
 
         define_command_impl! {
@@ -465,7 +465,7 @@ mod tests {
     }
 
     #[test]
-    fn macro_creates_impl_for_simple_command_with_response() {
+    fn macro_creates_impl_for_noack_simple_command_with_response() {
         pub struct ControlCommand;
 
         define_command_impl! {
@@ -477,7 +477,7 @@ mod tests {
     }
 
     #[test]
-    fn macro_creates_impl_for_input_command_with_response() {
+    fn macro_creates_impl_for_noack_input_command_with_response() {
         pub struct InputCommand(u32);
 
         define_command_impl! {
@@ -489,7 +489,29 @@ mod tests {
     }
 
     #[test]
-    fn macro_creates_simple_command() {
+    fn macro_creates_impl_for_ack_simple_command() {
+        pub struct ControlCommand;
+
+        define_command_impl! {
+            ControlCommand, { "cmd".to_string() }, 0, Ack
+        }
+        assert_eq!(ControlCommand.get_command_string(), "cmd");
+        assert_eq!(ControlCommand.get_delay(), 0);
+    }
+
+    #[test]
+    fn macro_creates_impl_for_ack_input_command() {
+        pub struct InputCommand(u32);
+
+        define_command_impl! {
+            cmd: InputCommand(u32), { format!("cmd,{}", cmd) }, 0, Ack
+        }
+        assert_eq!(InputCommand(43).get_command_string(), "cmd,43");
+        assert_eq!(InputCommand(43).get_delay(), 0);
+    }
+
+    #[test]
+    fn macro_creates_noack_simple_command() {
         define_command! {
             ControlCommand, { "cmd".to_string() }, 1000
         }
@@ -498,9 +520,27 @@ mod tests {
     }
 
     #[test]
-    fn macro_creates_input_command() {
+    fn macro_creates_noack_input_command() {
         define_command! {
             cmd: InputCommand(f32), { format!("cmd,{:.*}", 2, cmd) }, 0
+        }
+        assert_eq!(InputCommand(3.285).get_command_string(), "cmd,3.29");
+        assert_eq!(InputCommand(3.285).get_delay(), 0);
+    }
+
+    #[test]
+    fn macro_creates_ack_simple_command() {
+        define_command! {
+            ControlCommand, { "cmd".to_string() }, 1000, Ack
+        }
+        assert_eq!(ControlCommand.get_command_string(), "cmd");
+        assert_eq!(ControlCommand.get_delay(), 1000);
+    }
+
+    #[test]
+    fn macro_creates_ack_input_command() {
+        define_command! {
+            cmd: InputCommand(f32), { format!("cmd,{:.*}", 2, cmd) }, 0, Ack
         }
         assert_eq!(InputCommand(3.285).get_command_string(), "cmd,3.29");
         assert_eq!(InputCommand(3.285).get_delay(), 0);
@@ -527,7 +567,7 @@ mod tests {
     }
 
     #[test]
-    fn macro_creates_simple_command_with_docs() {
+    fn macro_creates_noack_simple_command_with_docs() {
         define_command! {
             doc: "docstring here",
             ControlCommand, { "cmd".to_string() }, 1000
@@ -537,10 +577,30 @@ mod tests {
     }
 
     #[test]
-    fn macro_creates_input_command_with_docs() {
+    fn macro_creates_noack_input_command_with_docs() {
         define_command! {
             doc: "docstring here",
             cmd: InputCommand(f32), { format!("cmd,{:.*}", 2, cmd) }, 0
+        }
+        assert_eq!(InputCommand(3.285).get_command_string(), "cmd,3.29");
+        assert_eq!(InputCommand(3.285).get_delay(), 0);
+    }
+
+    #[test]
+    fn macro_creates_ack_simple_command_with_docs() {
+        define_command! {
+            doc: "docstring here",
+            ControlCommand, { "cmd".to_string() }, 1000, Ack
+        }
+        assert_eq!(ControlCommand.get_command_string(), "cmd");
+        assert_eq!(ControlCommand.get_delay(), 1000);
+    }
+
+    #[test]
+    fn macro_creates_ack_input_command_with_docs() {
+        define_command! {
+            doc: "docstring here",
+            cmd: InputCommand(f32), { format!("cmd,{:.*}", 2, cmd) }, 0, Ack
         }
         assert_eq!(InputCommand(3.285).get_command_string(), "cmd,3.29");
         assert_eq!(InputCommand(3.285).get_delay(), 0);
