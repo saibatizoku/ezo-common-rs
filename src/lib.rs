@@ -235,17 +235,67 @@ macro_rules! command_run_fn {
 #[macro_export]
 macro_rules! define_command_impl {
     ($name:ident, $command_string:block, $delay:expr) => {
-        define_command_impl! {
-            $name, $command_string, $delay,
-            _resp: (), { Ok(()) }
+        impl Command for $name {
+            type Response = ();
+
+            fn get_command_string(&self) -> String {
+                $command_string
+            }
+
+            fn get_delay(&self) -> u64 {
+                $delay
+            }
+
+            command_run_fn! { NoAck }
         }
-     };
+    };
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
-        define_command_impl! {
-            $cmd: $name($data), $command_string, $delay,
-            _resp: (), { Ok(()) }
+        impl Command for $name {
+            type Response = ();
+
+            fn get_command_string(&self) -> String {
+                let $cmd = &self.0;
+                $command_string
+            }
+
+            fn get_delay(&self) -> u64 {
+                $delay
+            }
+
+            command_run_fn! { NoAck }
         }
-     };
+    };
+    ($name:ident, $command_string:block, $delay:expr, Ack) => {
+        impl Command for $name {
+            type Response = ();
+
+            fn get_command_string(&self) -> String {
+                $command_string
+            }
+
+            fn get_delay(&self) -> u64 {
+                $delay
+            }
+
+            command_run_fn! { Ack }
+        }
+    };
+    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, Ack) => {
+        impl Command for $name {
+            type Response = ();
+
+            fn get_command_string(&self) -> String {
+                let $cmd = &self.0;
+                $command_string
+            }
+
+            fn get_delay(&self) -> u64 {
+                $delay
+            }
+
+            command_run_fn! { Ack }
+        }
+    };
     ($name:ident, $command_string:block, $delay:expr,
      $resp:ident : $response:ty, $run_func:block) => {
         impl Command for $name {
@@ -322,6 +372,17 @@ macro_rules! define_command {
     };
     // {
     //   doc: "docstring",
+    //   Name, cmd_string_block, delay, Ack
+    // }
+    (doc: $doc:tt,
+     $name:ident, $command_string:block, $delay:expr, Ack) => {
+        #[doc=$doc]
+        define_command! {
+            $name, $command_string, $delay, Ack
+        }
+    };
+    // {
+    //   doc: "docstring",
     //   Name, cmd_string_block, delay,
     //   _data: ResponseType, resp_expr
     // }
@@ -343,6 +404,17 @@ macro_rules! define_command {
         #[doc=$doc]
         define_command!{
             $cmd: $name($data), $command_string, $delay
+        }
+    };
+    // {
+    //   doc: "docstring",
+    //   cmd: Name(type), cmd_string_block, delay, Ack
+    // }
+    (doc: $doc:tt,
+     $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, Ack) => {
+        #[doc=$doc]
+        define_command!{
+            $cmd: $name($data), $command_string, $delay, Ack
         }
     };
     // {
@@ -371,6 +443,14 @@ macro_rules! define_command {
         define_command_impl!($name, $command_string, $delay);
     };
     // {
+    //   Name, cmd_string_block, delay, Ack
+    // }
+    ($name:ident, $command_string:block, $delay:expr, Ack) => {
+        pub struct $name;
+
+        define_command_impl!($name, $command_string, $delay, Ack);
+    };
+    // {
     //   Name, cmd_string_block, delay,
     //   _data: ResponseType, resp_expr
     // }
@@ -391,6 +471,16 @@ macro_rules! define_command {
 
         define_command_impl! {
             $cmd: $name($data), $command_string, $delay
+        }
+    };
+    // {
+    //   cmd: Name(type), cmd_string_block, delay, Ack
+    // }
+    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, Ack) => {
+        pub struct $name(pub $data);
+
+        define_command_impl! {
+            $cmd: $name($data), $command_string, $delay, Ack
         }
     };
     // {
