@@ -176,10 +176,15 @@ pub fn string_from_response_data(response: &[u8]) -> Result<String> {
                     .chain_err(|| ErrorKind::I2CRead)?;
                 let resp_string = match response_code(data_buffer[0]) {
                     ResponseCode::Success => {
-                        string_from_response_data(&data_buffer[1..])
-                            .chain_err(|| "Data is not parsable")
+                        match data_buffer.iter().position(|&c| c == 0) {
+                            Some(len) => {
+                                string_from_response_data(&data_buffer[1...len])
+                                    .chain_err(|| ErrorKind::MalformedResponse)
+                            }
+                            _ => return Err(ErrorKind::MalformedResponse.into()),
+                        }
                     }
-                    _ => Err(ErrorKind::UnsuccessfulResponse.into()),
+                    _ => return Err(ErrorKind::UnsuccessfulResponse.into()),
                 };
                 let $resp = resp_string?;
                 $run_func
@@ -213,10 +218,15 @@ pub fn string_from_response_data(response: &[u8]) -> Result<String> {
                     .chain_err(|| ErrorKind::I2CRead)?;
                 let resp_string = match response_code(data_buffer[0]) {
                     ResponseCode::Success => {
-                        string_from_response_data(&data_buffer[1..])
-                            .chain_err(|| "Data is not parsable")
+                        match data_buffer.iter().position(|&c| c == 0) {
+                            Some(len) => {
+                                string_from_response_data(&data_buffer[1...len])
+                                    .chain_err(|| ErrorKind::MalformedResponse)
+                            }
+                            _ => return Err(ErrorKind::MalformedResponse.into()),
+                        }
                     }
-                    _ => Err(ErrorKind::UnsuccessfulResponse.into()),
+                    _ => return Err(ErrorKind::UnsuccessfulResponse.into()),
                 };
                 let $resp = resp_string?;
                 $run_func
