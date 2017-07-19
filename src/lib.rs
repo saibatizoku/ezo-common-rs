@@ -131,6 +131,46 @@ pub fn string_from_response_data(response: &[u8]) -> Result<String> {
     Ok(s)
 }
 
+/// Implements `fn run(dev: &mut LinuxI2CDevice) -> Result<$response>` for
+/// `define_command_impl!`.
+#[macro_export]
+macro_rules! command_run_fn {
+    ($resp:ident : $response:ty, $run_func:block) => {
+        fn run (&self, dev: &mut LinuxI2CDevice) -> Result<$response> {
+            let cmd = self.get_command_string();
+
+            let _w = write_to_ezo(dev, cmd.as_bytes())
+                .chain_err(|| "Error writing to EZO device.")?;
+
+            let delay = self.get_delay();
+
+            if delay > 0 {
+                thread::sleep(Duration::from_millis(delay));
+            };
+
+            let mut data_buffer = [0u8; MAX_DATA];
+
+            let _r = dev.read(&mut data_buffer)
+                .chain_err(|| ErrorKind::I2CRead)?;
+
+            let resp_string = match response_code(data_buffer[0]) {
+                ResponseCode::Success => {
+                    match data_buffer.iter().position(|&c| c == 0) {
+                        Some(len) => {
+                            string_from_response_data(&data_buffer[1...len])
+                                .chain_err(|| ErrorKind::MalformedResponse)
+                        }
+                        _ => return Err(ErrorKind::MalformedResponse.into()),
+                    }
+                }
+                _ => return Err(ErrorKind::UnsuccessfulResponse.into()),
+            };
+            let $resp = resp_string?;
+            $run_func
+        }
+     }
+}
+
 /// Short-hand for writing valid `impl` of commands
 ///
 /// Implement your own version of `MAX_DATA` wherever you are implementing
@@ -165,32 +205,7 @@ macro_rules! define_command_impl {
                 $delay
             }
 
-            fn run (&self, dev: &mut LinuxI2CDevice) -> Result<$response> {
-                let cmd = self.get_command_string();
-                let _w = write_to_ezo(dev, cmd.as_bytes())
-                    .chain_err(|| "Error writing to EZO device.")?;
-                let delay = self.get_delay();
-                if delay > 0 {
-                    thread::sleep(Duration::from_millis(delay));
-                };
-                let mut data_buffer = [0u8; MAX_DATA];
-                let _r = dev.read(&mut data_buffer)
-                    .chain_err(|| ErrorKind::I2CRead)?;
-                let resp_string = match response_code(data_buffer[0]) {
-                    ResponseCode::Success => {
-                        match data_buffer.iter().position(|&c| c == 0) {
-                            Some(len) => {
-                                string_from_response_data(&data_buffer[1...len])
-                                    .chain_err(|| ErrorKind::MalformedResponse)
-                            }
-                            _ => return Err(ErrorKind::MalformedResponse.into()),
-                        }
-                    }
-                    _ => return Err(ErrorKind::UnsuccessfulResponse.into()),
-                };
-                let $resp = resp_string?;
-                $run_func
-            }
+            command_run_fn! { $resp: $response, $run_func }
         }
     };
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
@@ -207,32 +222,7 @@ macro_rules! define_command_impl {
                 $delay
             }
 
-            fn run (&self, dev: &mut LinuxI2CDevice) -> Result<$response> {
-                let cmd = self.get_command_string();
-                let _w = write_to_ezo(dev, cmd.as_bytes())
-                    .chain_err(|| "Error writing to EZO device.")?;
-                let delay = self.get_delay();
-                if delay > 0 {
-                    thread::sleep(Duration::from_millis(delay));
-                };
-                let mut data_buffer = [0u8; MAX_DATA];
-                let _r = dev.read(&mut data_buffer)
-                    .chain_err(|| ErrorKind::I2CRead)?;
-                let resp_string = match response_code(data_buffer[0]) {
-                    ResponseCode::Success => {
-                        match data_buffer.iter().position(|&c| c == 0) {
-                            Some(len) => {
-                                string_from_response_data(&data_buffer[1...len])
-                                    .chain_err(|| ErrorKind::MalformedResponse)
-                            }
-                            _ => return Err(ErrorKind::MalformedResponse.into()),
-                        }
-                    }
-                    _ => return Err(ErrorKind::UnsuccessfulResponse.into()),
-                };
-                let $resp = resp_string?;
-                $run_func
-            }
+            command_run_fn! { $resp: $response, $run_func }
         }
     };
 }
