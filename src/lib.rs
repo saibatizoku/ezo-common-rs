@@ -163,7 +163,14 @@ macro_rules! command_run_fn {
                         _ => return Err(ErrorKind::MalformedResponse.into()),
                     }
                 }
-                _ => return Err(ErrorKind::UnsuccessfulResponse.into()),
+
+                ResponseCode::Pending => return Err(ErrorKind::PendingResponse.into()),
+
+                ResponseCode::DeviceError => return Err(ErrorKind::DeviceErrorResponse.into()),
+
+                ResponseCode::NoDataExpected => return Err(ErrorKind::NoDataExpectedResponse.into()),
+
+                ResponseCode::UnknownError => return Err(ErrorKind::MalformedResponse.into()),
             };
             let $resp = resp_string?;
             $run_func
