@@ -183,13 +183,13 @@ macro_rules! define_command_impl {
     ($name:ident, $command_string:block, $delay:expr) => {
         define_command_impl! {
             $name, $command_string, $delay,
-            resp: (), { Ok(()) }
+            _resp: (), { Ok(()) }
         }
      };
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
         define_command_impl! {
             $cmd: $name($data), $command_string, $delay,
-            resp: (), { Ok(()) }
+            _resp: (), { Ok(()) }
         }
      };
     ($name:ident, $command_string:block, $delay:expr,
