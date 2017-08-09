@@ -16,7 +16,7 @@ pub mod errors;
 use errors::*;
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::LinuxI2CDevice;
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 use std::thread;
 use std::time::Duration;
 
@@ -87,10 +87,12 @@ pub enum ResponseCode {
 }
 
 /// Writes the ASCII command to the EZO chip, with one retry.
-pub fn write_to_ezo(dev: &mut LinuxI2CDevice, cmd: &[u8]) -> Result<()> {
-    if let Err(_) = dev.write(cmd) {
+pub fn write_to_ezo(dev: &mut LinuxI2CDevice, cmd_str: &str) -> Result<()> {
+    let cmd = CString::new(cmd_str)
+        .chain_err(|| "Command cannot be used")?;
+    if let Err(_) = dev.write(cmd.as_bytes_with_nul()) {
         thread::sleep(Duration::from_millis(100));
-        dev.write(cmd).chain_err(|| "Command could not be sent")?;
+        dev.write(cmd.as_bytes_with_nul()).chain_err(|| "Command could not be sent")?;
     };
     Ok(())
 }
@@ -139,7 +141,7 @@ macro_rules! command_run_fn {
         fn run (&self, dev: &mut LinuxI2CDevice) -> Result<()> {
             let cmd = self.get_command_string();
 
-            let _w = write_to_ezo(dev, cmd.as_bytes())
+            let _w = write_to_ezo(dev, &cmd)
                 .chain_err(|| "Error writing to EZO device.")?;
 
             let delay = self.get_delay();
@@ -170,7 +172,7 @@ macro_rules! command_run_fn {
         fn run (&self, dev: &mut LinuxI2CDevice) -> Result<()> {
             let cmd = self.get_command_string();
 
-            let _w = write_to_ezo(dev, cmd.as_bytes())
+            let _w = write_to_ezo(dev, &cmd)
                 .chain_err(|| "Error writing to EZO device.")?;
 
             let delay = self.get_delay();
@@ -186,7 +188,7 @@ macro_rules! command_run_fn {
         fn run (&self, dev: &mut LinuxI2CDevice) -> Result<$response> {
             let cmd = self.get_command_string();
 
-            let _w = write_to_ezo(dev, cmd.as_bytes())
+            let _w = write_to_ezo(dev, &cmd)
                 .chain_err(|| "Error writing to EZO device.")?;
 
             let delay = self.get_delay();
@@ -767,10 +769,10 @@ mod tests {
     fn macro_creates_input_command_with_response_with_docs() {
         define_command! {
             doc: "docstring here",
-            cmd: InputCommand(u8), { format!("cmd,{}", cmd) }, 140,
+            cmd: InputCommand(u8), { format!("cmd,{}\0", cmd) }, 140,
             _data: (), { Ok (()) }
         }
-        assert_eq!(InputCommand(0x7F).get_command_string(), "cmd,127");
+        assert_eq!(InputCommand(0x7F).get_command_string(), "cmd,127\0");
         assert_eq!(InputCommand(0x7F).get_delay(), 140);
     }
 }
