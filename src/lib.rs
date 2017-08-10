@@ -48,7 +48,7 @@ pub fn response_code(code_byte: u8) -> ResponseCode {
 }
 
 /// Allowable baudrates used when changing the chip to UART mode.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BpsRate {
     Bps300 = 300,
     Bps1200 = 1200,
