@@ -48,7 +48,7 @@ pub fn response_code(code_byte: u8) -> ResponseCode {
 }
 
 /// Allowable baudrates used when changing the chip to UART mode.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum BpsRate {
     Bps300 = 300,
     Bps1200 = 1200,
@@ -372,6 +372,7 @@ macro_rules! define_command {
 
         define_command_impl!($name, $command_string, $delay);
     };
+
     // {
     //   doc: "docstring",
     //   Name, cmd_string_block, delay, Ack
@@ -383,6 +384,7 @@ macro_rules! define_command {
 
         define_command_impl!($name, $command_string, $delay, Ack);
     };
+
     // {
     //   doc: "docstring",
     //   Name, cmd_string_block, delay,
@@ -399,6 +401,7 @@ macro_rules! define_command {
             $resp: $response, $run_func
         }
     };
+
     // {
     //   doc: "docstring",
     //   cmd: Name(type), cmd_string_block, delay
@@ -412,6 +415,7 @@ macro_rules! define_command {
             $cmd: $name($data), $command_string, $delay
         }
     };
+
     // {
     //   doc: "docstring",
     //   cmd: Name(type), cmd_string_block, delay, Ack
@@ -425,6 +429,7 @@ macro_rules! define_command {
             $cmd: $name($data), $command_string, $delay, Ack
         }
     };
+
     // {
     //   doc: "docstring",
     //   cmd: Name(type), cmd_string_block, delay,
@@ -453,6 +458,7 @@ macro_rules! define_command {
 
         define_command_impl!($name, $command_string, $delay);
     };
+
     // {
     //   Name, cmd_string_block, delay, Ack
     // }
@@ -461,6 +467,7 @@ macro_rules! define_command {
 
         define_command_impl!($name, $command_string, $delay, Ack);
     };
+
     // {
     //   Name, cmd_string_block, delay,
     //   _data: ResponseType, resp_expr
@@ -474,6 +481,7 @@ macro_rules! define_command {
             $resp: $response, $run_func
         }
     };
+
     // {
     //   cmd: Name(type), cmd_string_block, delay
     // }
@@ -484,6 +492,7 @@ macro_rules! define_command {
             $cmd: $name($data), $command_string, $delay
         }
     };
+
     // {
     //   cmd: Name(type), cmd_string_block, delay, Ack
     // }
@@ -494,6 +503,7 @@ macro_rules! define_command {
             $cmd: $name($data), $command_string, $delay, Ack
         }
     };
+
     // {
     //   cmd: Name(type), cmd_string_block, delay,
     //   _data: ResponseType, resp_expr
