@@ -61,6 +61,21 @@ pub enum BpsRate {
 }
 
 impl BpsRate {
+    /// Returns the `BpsRate` from a `u32` value.
+    pub fn from_num(bps_rate: u32) -> Result<BpsRate> {
+        let bps = match bps_rate {
+            x if x == BpsRate::Bps300 as u32 => BpsRate::Bps300,
+            x if x == BpsRate::Bps1200 as u32 => BpsRate::Bps1200,
+            x if x == BpsRate::Bps2400 as u32 => BpsRate::Bps2400,
+            x if x == BpsRate::Bps9600 as u32 => BpsRate::Bps9600,
+            x if x == BpsRate::Bps19200 as u32 => BpsRate::Bps19200,
+            x if x == BpsRate::Bps38400 as u32 => BpsRate::Bps38400,
+            x if x == BpsRate::Bps57600 as u32 => BpsRate::Bps57600,
+            x if x == BpsRate::Bps115200 as u32 => BpsRate::Bps115200,
+            _ => return Err(ErrorKind::BpsRateParse.into()),
+        };
+        Ok(bps)
+    }
     /// Returns the BpsRate as a `u32` value.
     pub fn parse(&self) -> u32 {
         match *self {

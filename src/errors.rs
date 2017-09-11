@@ -6,6 +6,9 @@ error_chain! {
             description ("unsuccessful device read")
             display ("response was not obtainable")
         }
+        BpsRateParse {
+            description ("could not parse bps rate")
+        }
         // The response is not nul-terminated, or it is not valid ASCII/UTF-8
         MalformedResponse {
             description ("malformed response")
