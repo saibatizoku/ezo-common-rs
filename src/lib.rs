@@ -62,7 +62,7 @@ pub enum BpsRate {
 
 impl BpsRate {
     /// Returns the `BpsRate` from a `u32` value.
-    pub fn from_num(bps_rate: u32) -> Result<BpsRate> {
+    pub fn parse_u32(bps_rate: u32) -> Result<BpsRate> {
         let bps = match bps_rate {
             x if x == BpsRate::Bps300 as u32 => BpsRate::Bps300,
             x if x == BpsRate::Bps1200 as u32 => BpsRate::Bps1200,
