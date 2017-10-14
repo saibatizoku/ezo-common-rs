@@ -543,6 +543,18 @@ mod tests {
     }
 
     #[test]
+    fn converts_numbers_to_baud_rates() {
+        assert_eq!(BpsRate::Bps300, BpsRate::parse_u32(300).unwrap());
+        assert_eq!(BpsRate::Bps1200, BpsRate::parse_u32(1200).unwrap());
+        assert_eq!(BpsRate::Bps2400, BpsRate::parse_u32(2400).unwrap());
+        assert_eq!(BpsRate::Bps9600, BpsRate::parse_u32(9600).unwrap());
+        assert_eq!(BpsRate::Bps19200, BpsRate::parse_u32(19200).unwrap());
+        assert_eq!(BpsRate::Bps38400, BpsRate::parse_u32(38400).unwrap());
+        assert_eq!(BpsRate::Bps57600, BpsRate::parse_u32(57600).unwrap());
+        assert_eq!(BpsRate::Bps115200, BpsRate::parse_u32(115200).unwrap());
+    }
+
+    #[test]
     fn turns_off_high_bits() {
         let data: [u8; 11] = [63, 73, 44, 112, 72, 44, 49, 46, 57, 56, 0];
         let mut flipped_data: [u8; 11] = [63, 73, 172, 112, 200, 172, 49, 46, 57, 56, 0];
