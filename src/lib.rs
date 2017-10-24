@@ -148,6 +148,8 @@ pub fn string_from_response_data(response: &[u8]) -> Result<String> {
     Ok(s)
 }
 
+/// The most common `fn run` implementation.
+#[macro_export]
 macro_rules! command_run_fn_common {
     ( $self:ident, $dev:ident ) => {
         let cmd = $self.get_command_string();
