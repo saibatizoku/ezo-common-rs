@@ -217,17 +217,17 @@ macro_rules! command_run_fn {
                             string_from_response_data(&data_buffer[1..=len])
                                 .chain_err(|| ErrorKind::MalformedResponse)
                         }
-                        _ => return Err(ErrorKind::MalformedResponse.into()),
+                        _ => bail!(ErrorKind::MalformedResponse),
                     }
                 }
 
-                ResponseCode::Pending => return Err(ErrorKind::PendingResponse.into()),
+                ResponseCode::Pending => bail!(ErrorKind::PendingResponse),
 
-                ResponseCode::DeviceError => return Err(ErrorKind::DeviceErrorResponse.into()),
+                ResponseCode::DeviceError => bail!(ErrorKind::DeviceErrorResponse),
 
-                ResponseCode::NoDataExpected => return Err(ErrorKind::NoDataExpectedResponse.into()),
+                ResponseCode::NoDataExpected => bail!(ErrorKind::NoDataExpectedResponse),
 
-                ResponseCode::UnknownError => return Err(ErrorKind::MalformedResponse.into()),
+                ResponseCode::UnknownError => bail!(ErrorKind::MalformedResponse),
             };
             let $resp = resp_string?;
             $run_func
