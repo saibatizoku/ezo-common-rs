@@ -376,7 +376,7 @@ macro_rules! define_command {
     (doc : $doc:tt,
      $name:ident, $command_string:block, $delay:expr) => {
         #[ doc = $doc ]
-        #[derive(PartialEq, Eq)]
+        #[derive(Debug, PartialEq, Eq)]
         pub struct $name;
 
         define_command_impl!($name, $command_string, $delay);
