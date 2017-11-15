@@ -376,7 +376,7 @@ macro_rules! define_command {
     (doc : $doc:tt,
      $name:ident, $command_string:block, $delay:expr) => {
         #[ doc = $doc ]
-        #[derive(Debug, PartialEq, Eq)]
+        #[derive(Debug, PartialEq)]
         pub struct $name;
 
         define_command_impl!($name, $command_string, $delay);
@@ -389,6 +389,7 @@ macro_rules! define_command {
     (doc : $doc:tt,
      $name:ident, $command_string:block, $delay:expr, Ack) => {
         #[ doc = $doc ]
+        #[derive(Debug, PartialEq)]
         pub struct $name;
 
         define_command_impl!($name, $command_string, $delay, Ack);
@@ -403,6 +404,7 @@ macro_rules! define_command {
      $name:ident, $command_string:block, $delay:expr,
      $resp:ident : $response:ty, $run_func:block) => {
         #[ doc = $doc ]
+        #[derive(Debug, PartialEq)]
         pub struct $name;
 
         define_command_impl! {
@@ -418,6 +420,7 @@ macro_rules! define_command {
     (doc : $doc:tt,
      $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
         #[ doc = $doc ]
+        #[derive(Debug, PartialEq)]
         pub struct $name(pub $data);
 
         define_command_impl! {
@@ -432,6 +435,7 @@ macro_rules! define_command {
     (doc : $doc:tt,
      $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, Ack) => {
         #[ doc = $doc ]
+        #[derive(Debug, PartialEq)]
         pub struct $name(pub $data);
 
         define_command_impl! {
@@ -448,6 +452,7 @@ macro_rules! define_command {
      $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
      $resp:ident : $response:ty, $run_func:block) => {
         #[ doc = $doc ]
+        #[derive(Debug, PartialEq)]
         pub struct $name(pub $data);
 
         define_command_impl! {
@@ -463,6 +468,7 @@ macro_rules! define_command {
     //   Name, cmd_string_block, delay
     // }
     ($name:ident, $command_string:block, $delay:expr) => {
+        #[derive(Debug, PartialEq)]
         pub struct $name;
 
         define_command_impl!($name, $command_string, $delay);
@@ -472,6 +478,7 @@ macro_rules! define_command {
     //   Name, cmd_string_block, delay, Ack
     // }
     ($name:ident, $command_string:block, $delay:expr, Ack) => {
+        #[derive(Debug, PartialEq)]
         pub struct $name;
 
         define_command_impl!($name, $command_string, $delay, Ack);
@@ -483,6 +490,7 @@ macro_rules! define_command {
     // }
     ($name:ident, $command_string:block, $delay:expr,
      $resp:ident : $response:ty, $run_func:block) => {
+        #[derive(Debug, PartialEq)]
         pub struct $name;
 
         define_command_impl! {
@@ -495,6 +503,7 @@ macro_rules! define_command {
     //   cmd: Name(type), cmd_string_block, delay
     // }
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
+        #[derive(Debug, PartialEq)]
         pub struct $name(pub $data);
 
         define_command_impl! {
@@ -506,6 +515,7 @@ macro_rules! define_command {
     //   cmd: Name(type), cmd_string_block, delay, Ack
     // }
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, Ack) => {
+        #[derive(Debug, PartialEq)]
         pub struct $name(pub $data);
 
         define_command_impl! {
@@ -519,6 +529,7 @@ macro_rules! define_command {
     // }
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
      $resp:ident : $response:ty, $run_func:block) => {
+        #[derive(Debug, PartialEq)]
         pub struct $name(pub $data);
 
         define_command_impl! {
