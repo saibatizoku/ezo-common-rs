@@ -170,7 +170,7 @@ macro_rules! command_run_fn_common {
 #[macro_export]
 macro_rules! command_run_fn {
     (Ack) => {
-        fn run (&self, dev: &mut LinuxI2CDevice) -> Result<()> {
+        fn run (&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<(), Error> {
 
             command_run_fn_common!(self, dev);
 
@@ -193,7 +193,7 @@ macro_rules! command_run_fn {
         }
     };
     (NoAck) => {
-        fn run (&self, dev: &mut LinuxI2CDevice) -> Result<()> {
+        fn run (&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<(), Error> {
 
             command_run_fn_common!(self, dev);
 
@@ -201,7 +201,7 @@ macro_rules! command_run_fn {
         }
     };
     ($resp:ident : $response:ty, $run_func:block) => {
-        fn run (&self, dev: &mut LinuxI2CDevice) -> Result<$response> {
+        fn run (&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<$response, Error> {
 
             command_run_fn_common!(self, dev);
 
