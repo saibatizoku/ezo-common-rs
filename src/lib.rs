@@ -32,7 +32,7 @@ pub trait Command {
 
     fn get_command_string(&self) -> String;
     fn get_delay(&self) -> u64;
-    fn run(&self, dev: &mut LinuxI2CDevice) -> Result<Self::Response>;
+    fn run(&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<Self::Response, Error>;
 }
 
 /// Determines the response code sent by the EZO chip.
