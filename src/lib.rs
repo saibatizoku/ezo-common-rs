@@ -28,11 +28,12 @@ pub const MAX_DATA: usize = 42;
 
 /// I2C command for the EZO chip.
 pub trait Command {
+    type Error;
     type Response;
 
     fn get_command_string(&self) -> String;
     fn get_delay(&self) -> u64;
-    fn run(&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<Self::Response, Error>;
+    fn run(&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<Self::Response, Self::Error>;
 }
 
 /// Determines the response code sent by the EZO chip.
@@ -170,7 +171,7 @@ macro_rules! command_run_fn_common {
 #[macro_export]
 macro_rules! command_run_fn {
     (Ack) => {
-        fn run (&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<(), Error> {
+        fn run (&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<(), Self::Error> {
 
             command_run_fn_common!(self, dev);
 
@@ -193,7 +194,7 @@ macro_rules! command_run_fn {
         }
     };
     (NoAck) => {
-        fn run (&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<(), Error> {
+        fn run (&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<(), Self::Error> {
 
             command_run_fn_common!(self, dev);
 
@@ -201,7 +202,7 @@ macro_rules! command_run_fn {
         }
     };
     ($resp:ident : $response:ty, $run_func:block) => {
-        fn run (&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<$response, Error> {
+        fn run (&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<$response, Self::Error> {
 
             command_run_fn_common!(self, dev);
 
@@ -246,6 +247,7 @@ macro_rules! command_run_fn {
 macro_rules! define_command_impl {
     ($name:ident, $command_string:block, $delay:expr) => {
         impl Command for $name {
+            type Error = super::errors::Error;
             type Response = ();
 
             fn get_command_string(&self) -> String {
@@ -261,6 +263,7 @@ macro_rules! define_command_impl {
     };
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
         impl Command for $name {
+            type Error = super::errors::Error;
             type Response = ();
 
             fn get_command_string(&self) -> String {
@@ -277,6 +280,7 @@ macro_rules! define_command_impl {
     };
     ($name:ident, $command_string:block, $delay:expr, Ack) => {
         impl Command for $name {
+            type Error = super::errors::Error;
             type Response = ();
 
             fn get_command_string(&self) -> String {
@@ -292,6 +296,7 @@ macro_rules! define_command_impl {
     };
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, Ack) => {
         impl Command for $name {
+            type Error = super::errors::Error;
             type Response = ();
 
             fn get_command_string(&self) -> String {
@@ -309,6 +314,7 @@ macro_rules! define_command_impl {
     ($name:ident, $command_string:block, $delay:expr,
      $resp:ident : $response:ty, $run_func:block) => {
         impl Command for $name {
+            type Error = super::errors::Error;
             type Response = $response;
 
             fn get_command_string(&self) -> String {
@@ -325,6 +331,7 @@ macro_rules! define_command_impl {
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
      $resp:ident : $response:ty, $run_func:block) => {
         impl Command for $name {
+            type Error = super::errors::Error;
             type Response = $response;
 
             fn get_command_string(&self) -> String {
