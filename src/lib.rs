@@ -15,7 +15,9 @@ extern crate i2cdev;
 #[macro_use]
 mod macros;
 
+pub mod command;
 pub mod errors;
+pub mod response;
 
 use errors::*;
 use i2cdev::core::I2CDevice;

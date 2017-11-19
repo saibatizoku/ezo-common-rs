@@ -6,8 +6,14 @@ error_chain! {
             description ("unsuccessful device read")
             display ("response was not obtainable")
         }
+        BaudParse {
+            description ("could not parse Baud command")
+        }
         BpsRateParse {
             description ("could not parse bps rate")
+        }
+        CommandParse {
+            description ("command parse failed")
         }
         // The response is not nul-terminated, or it is not valid ASCII/UTF-8
         MalformedResponse {
