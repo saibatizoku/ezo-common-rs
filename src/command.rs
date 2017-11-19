@@ -83,105 +83,6 @@ impl FromStr for CalibrationClear {
 }
 
 define_command! {
-    doc: "`EXPORT` command. Returns an `Exported` response. Exports current calibration.",
-    Export, { "EXPORT".to_string() }, 300,
-    resp: Exported, { Exported::parse(&resp) }
-}
-
-impl FromStr for Export {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        let supper = s.to_uppercase();
-        match supper.as_ref() {
-            "EXPORT" => Ok(Export),
-            _ => bail!(ErrorKind::CommandParse),
-        }
-    }
-}
-
-define_command! {
-    doc: "`EXPORT,?` command. Returns an `ExportedInfo` response. Calibration string info.",
-    ExportInfo, { "EXPORT,?".to_string() }, 300,
-    resp: ExportedInfo, { ExportedInfo::parse(&resp) }
-}
-
-impl FromStr for ExportInfo {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        let supper = s.to_uppercase();
-        match supper.as_ref() {
-            "EXPORT,?" => Ok(ExportInfo),
-            _ => bail!(ErrorKind::CommandParse),
-        }
-    }
-}
-
-define_command! {
-    doc: "`IMPORT,n` command, where `n` is of type `String`.",
-    cmd: Import(String), { format!("IMPORT,{}", cmd) }, 300, Ack
-}
-
-impl FromStr for Import {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        let supper = s.to_uppercase();
-        if supper.starts_with("IMPORT,") {
-            let rest = supper.get(7..).unwrap();
-            let mut split = rest.split(',');
-            let value = match split.next() {
-                Some(n) if n.len() > 0 && n.len() < 13 => {
-                    n.to_string()
-                }
-                _ => bail!(ErrorKind::CommandParse),
-            };
-            match split.next() {
-                None => return Ok(Import(value)),
-                _ => bail!(ErrorKind::CommandParse),
-            }
-        } else {
-            bail!(ErrorKind::CommandParse);
-        }
-    }
-}
-
-define_command! {
-    doc: "`FACTORY` command. Enable factory reset.",
-    Factory, { "FACTORY".to_string() }, 0
-}
-
-impl FromStr for Factory {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        let supper = s.to_uppercase();
-        match supper.as_ref() {
-            "FACTORY" => Ok(Factory),
-            _ => bail!(ErrorKind::CommandParse),
-        }
-    }
-}
-
-define_command! {
-    doc: "`FIND` command. Find device with blinking white LED.",
-    Find, { "F".to_string() }, 300
-}
-
-impl FromStr for Find {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        let supper = s.to_uppercase();
-        match supper.as_ref() {
-            "F" => Ok(Find),
-            _ => bail!(ErrorKind::CommandParse),
-        }
-    }
-}
-
-define_command! {
     doc: "`I2C,n` command, where `n` is of type `u16`. Chance I2C address.",
     cmd: DeviceAddress(u16), { format!("I2C,{}", cmd) }, 300
 }
@@ -230,18 +131,100 @@ impl FromStr for DeviceInformation {
 }
 
 define_command! {
-    doc: "`L,1` command. Enable LED.",
-    LedOn, { "L,1".to_string() }, 300, Ack
+    doc: "`EXPORT` command. Returns an `Exported` response. Exports current calibration.",
+    Export, { "EXPORT".to_string() }, 300,
+    resp: Exported, { Exported::parse(&resp) }
 }
 
-impl FromStr for LedOn {
+impl FromStr for Export {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
-            "L,1" => Ok(LedOn),
+            "EXPORT" => Ok(Export),
             _ => bail!(ErrorKind::CommandParse),
+        }
+    }
+}
+
+define_command! {
+    doc: "`EXPORT,?` command. Returns an `ExportedInfo` response. Calibration string info.",
+    ExportInfo, { "EXPORT,?".to_string() }, 300,
+    resp: ExportedInfo, { ExportedInfo::parse(&resp) }
+}
+
+impl FromStr for ExportInfo {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let supper = s.to_uppercase();
+        match supper.as_ref() {
+            "EXPORT,?" => Ok(ExportInfo),
+            _ => bail!(ErrorKind::CommandParse),
+        }
+    }
+}
+
+define_command! {
+    doc: "`FACTORY` command. Enable factory reset.",
+    Factory, { "FACTORY".to_string() }, 0
+}
+
+impl FromStr for Factory {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let supper = s.to_uppercase();
+        match supper.as_ref() {
+            "FACTORY" => Ok(Factory),
+            _ => bail!(ErrorKind::CommandParse),
+        }
+    }
+}
+
+define_command! {
+    doc: "`FIND` command. Find device with blinking white LED.",
+    Find, { "F".to_string() }, 300
+}
+
+impl FromStr for Find {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let supper = s.to_uppercase();
+        match supper.as_ref() {
+            "F" => Ok(Find),
+            _ => bail!(ErrorKind::CommandParse),
+        }
+    }
+}
+
+define_command! {
+    doc: "`IMPORT,n` command, where `n` is of type `String`.",
+    cmd: Import(String), { format!("IMPORT,{}", cmd) }, 300, Ack
+}
+
+impl FromStr for Import {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let supper = s.to_uppercase();
+        if supper.starts_with("IMPORT,") {
+            let rest = supper.get(7..).unwrap();
+            let mut split = rest.split(',');
+            let value = match split.next() {
+                Some(n) if n.len() > 0 && n.len() < 13 => {
+                    n.to_string()
+                }
+                _ => bail!(ErrorKind::CommandParse),
+            };
+            match split.next() {
+                None => return Ok(Import(value)),
+                _ => bail!(ErrorKind::CommandParse),
+            }
+        } else {
+            bail!(ErrorKind::CommandParse);
         }
     }
 }
@@ -258,6 +241,23 @@ impl FromStr for LedOff {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "L,0" => Ok(LedOff),
+            _ => bail!(ErrorKind::CommandParse),
+        }
+    }
+}
+
+define_command! {
+    doc: "`L,1` command. Enable LED.",
+    LedOn, { "L,1".to_string() }, 300, Ack
+}
+
+impl FromStr for LedOn {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let supper = s.to_uppercase();
+        match supper.as_ref() {
+            "L,1" => Ok(LedOn),
             _ => bail!(ErrorKind::CommandParse),
         }
     }
@@ -282,23 +282,6 @@ impl FromStr for LedState {
 }
 
 define_command! {
-    doc: "`PLOCK,1` command. Enable I2C protocol lock.",
-    ProtocolLockEnable, { "PLOCK,1".to_string() }, 300, Ack
-}
-
-impl FromStr for ProtocolLockEnable {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        let supper = s.to_uppercase();
-        match supper.as_ref() {
-            "PLOCK,1" => Ok(ProtocolLockEnable),
-            _ => bail!(ErrorKind::CommandParse),
-        }
-    }
-}
-
-define_command! {
     doc: "`PLOCK,0` command. Disable I2C protocol lock.",
     ProtocolLockDisable, { "PLOCK,0".to_string() }, 300, Ack
 }
@@ -310,6 +293,23 @@ impl FromStr for ProtocolLockDisable {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "PLOCK,0" => Ok(ProtocolLockDisable),
+            _ => bail!(ErrorKind::CommandParse),
+        }
+    }
+}
+
+define_command! {
+    doc: "`PLOCK,1` command. Enable I2C protocol lock.",
+    ProtocolLockEnable, { "PLOCK,1".to_string() }, 300, Ack
+}
+
+impl FromStr for ProtocolLockEnable {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let supper = s.to_uppercase();
+        match supper.as_ref() {
+            "PLOCK,1" => Ok(ProtocolLockEnable),
             _ => bail!(ErrorKind::CommandParse),
         }
     }
@@ -334,6 +334,23 @@ impl FromStr for ProtocolLockState {
 }
 
 define_command! {
+    doc: "`SLEEP` command. Enter sleep mode/low power.",
+    Sleep, { "SLEEP".to_string() }, 0
+}
+
+impl FromStr for Sleep {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let supper = s.to_uppercase();
+        match supper.as_ref() {
+            "SLEEP" => Ok(Sleep),
+            _ => bail!(ErrorKind::CommandParse),
+        }
+    }
+}
+
+define_command! {
     doc: "`STATUS` command. Returns a `DeviceStatus` response. Retrieve status information.",
     Status, { "STATUS".to_string() }, 300,
     resp: DeviceStatus, { DeviceStatus::parse(&resp) }
@@ -346,23 +363,6 @@ impl FromStr for Status {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "STATUS" => Ok(Status),
-            _ => bail!(ErrorKind::CommandParse),
-        }
-    }
-}
-
-define_command! {
-    doc: "`SLEEP` command. Enter sleep mode/low power.",
-    Sleep, { "SLEEP".to_string() }, 0
-}
-
-impl FromStr for Sleep {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        let supper = s.to_uppercase();
-        match supper.as_ref() {
-            "SLEEP" => Ok(Sleep),
             _ => bail!(ErrorKind::CommandParse),
         }
     }
@@ -517,6 +517,47 @@ mod tests {
     }
 
     #[test]
+    fn build_command_change_device_address() {
+        let cmd = DeviceAddress(88);
+        assert_eq!(cmd.get_command_string(), "I2C,88");
+        assert_eq!(cmd.get_delay(), 300);
+    }
+
+    #[test]
+    fn parse_case_insensitive_device_address() {
+        let cmd = "i2c,1".parse::<DeviceAddress>().unwrap();
+        assert_eq!(cmd, DeviceAddress(1));
+
+        let cmd = "I2C,123".parse::<DeviceAddress>().unwrap();
+        assert_eq!(cmd, DeviceAddress(123));
+    }
+
+    #[test]
+    fn parse_invalid_command_device_address_yields_err() {
+        let cmd = "I2C,".parse::<DeviceAddress>();
+        assert!(cmd.is_err());
+
+        let cmd = "I2C,1a21.43".parse::<DeviceAddress>();
+        assert!(cmd.is_err());
+    }
+
+    #[test]
+    fn build_command_device_information() {
+        let cmd = DeviceInformation;
+        assert_eq!(cmd.get_command_string(), "I");
+        assert_eq!(cmd.get_delay(), 300);
+    }
+
+    #[test]
+    fn parse_case_insensitive_command_device_information() {
+        let cmd = "i".parse::<DeviceInformation>().unwrap();
+        assert_eq!(cmd, DeviceInformation);
+
+        let cmd = "I".parse::<DeviceInformation>().unwrap();
+        assert_eq!(cmd, DeviceInformation);
+    }
+
+    #[test]
     fn build_command_export() {
         let cmd = Export;
         assert_eq!(cmd.get_command_string(), "EXPORT");
@@ -546,23 +587,6 @@ mod tests {
 
         let cmd = "EXPORT,?".parse::<ExportInfo>().unwrap();
         assert_eq!(cmd, ExportInfo);
-    }
-
-    #[test]
-    fn build_command_import() {
-        let calibration_string = "ABCDEFGHIJKLMNO".to_string();
-        let cmd = Import(calibration_string);
-        assert_eq!(cmd.get_command_string(), "IMPORT,ABCDEFGHIJKLMNO");
-        assert_eq!(cmd.get_delay(), 300);
-    }
-
-    #[test]
-    fn parse_case_insensitive_command_import() {
-        let cmd = "import,1".parse::<Import>().unwrap();
-        assert_eq!(cmd, Import("1".to_string()));
-
-        let cmd = "IMPORT,abcdef".parse::<Import>().unwrap();
-        assert_eq!(cmd, Import("ABCDEF".to_string()));
     }
 
     #[test]
@@ -598,60 +622,20 @@ mod tests {
     }
 
     #[test]
-    fn build_command_device_information() {
-        let cmd = DeviceInformation;
-        assert_eq!(cmd.get_command_string(), "I");
+    fn build_command_import() {
+        let calibration_string = "ABCDEFGHIJKLMNO".to_string();
+        let cmd = Import(calibration_string);
+        assert_eq!(cmd.get_command_string(), "IMPORT,ABCDEFGHIJKLMNO");
         assert_eq!(cmd.get_delay(), 300);
     }
 
     #[test]
-    fn parse_case_insensitive_command_device_information() {
-        let cmd = "i".parse::<DeviceInformation>().unwrap();
-        assert_eq!(cmd, DeviceInformation);
+    fn parse_case_insensitive_command_import() {
+        let cmd = "import,1".parse::<Import>().unwrap();
+        assert_eq!(cmd, Import("1".to_string()));
 
-        let cmd = "I".parse::<DeviceInformation>().unwrap();
-        assert_eq!(cmd, DeviceInformation);
-    }
-
-    #[test]
-    fn build_command_change_device_address() {
-        let cmd = DeviceAddress(88);
-        assert_eq!(cmd.get_command_string(), "I2C,88");
-        assert_eq!(cmd.get_delay(), 300);
-    }
-
-    #[test]
-    fn parse_case_insensitive_device_address() {
-        let cmd = "i2c,1".parse::<DeviceAddress>().unwrap();
-        assert_eq!(cmd, DeviceAddress(1));
-
-        let cmd = "I2C,123".parse::<DeviceAddress>().unwrap();
-        assert_eq!(cmd, DeviceAddress(123));
-    }
-
-    #[test]
-    fn parse_invalid_command_device_address_yields_err() {
-        let cmd = "I2C,".parse::<DeviceAddress>();
-        assert!(cmd.is_err());
-
-        let cmd = "I2C,1a21.43".parse::<DeviceAddress>();
-        assert!(cmd.is_err());
-    }
-
-    #[test]
-    fn build_command_led_on() {
-        let cmd = LedOn;
-        assert_eq!(cmd.get_command_string(), "L,1");
-        assert_eq!(cmd.get_delay(), 300);
-    }
-
-    #[test]
-    fn parse_case_insensitive_command_led_on() {
-        let cmd = "l,1".parse::<LedOn>().unwrap();
-        assert_eq!(cmd, LedOn);
-
-        let cmd = "L,1".parse::<LedOn>().unwrap();
-        assert_eq!(cmd, LedOn);
+        let cmd = "IMPORT,abcdef".parse::<Import>().unwrap();
+        assert_eq!(cmd, Import("ABCDEF".to_string()));
     }
 
     #[test]
@@ -671,6 +655,22 @@ mod tests {
     }
 
     #[test]
+    fn build_command_led_on() {
+        let cmd = LedOn;
+        assert_eq!(cmd.get_command_string(), "L,1");
+        assert_eq!(cmd.get_delay(), 300);
+    }
+
+    #[test]
+    fn parse_case_insensitive_command_led_on() {
+        let cmd = "l,1".parse::<LedOn>().unwrap();
+        assert_eq!(cmd, LedOn);
+
+        let cmd = "L,1".parse::<LedOn>().unwrap();
+        assert_eq!(cmd, LedOn);
+    }
+
+    #[test]
     fn build_command_led_state() {
         let cmd = LedState;
         assert_eq!(cmd.get_command_string(), "L,?");
@@ -687,22 +687,6 @@ mod tests {
     }
 
     #[test]
-    fn build_command_plock_enable() {
-        let cmd = ProtocolLockEnable;
-        assert_eq!(cmd.get_command_string(), "PLOCK,1");
-        assert_eq!(cmd.get_delay(), 300);
-    }
-
-    #[test]
-    fn parse_case_insensitive_command_plock_enable() {
-        let cmd = "plock,1".parse::<ProtocolLockEnable>().unwrap();
-        assert_eq!(cmd, ProtocolLockEnable);
-
-        let cmd = "PLOCK,1".parse::<ProtocolLockEnable>().unwrap();
-        assert_eq!(cmd, ProtocolLockEnable);
-    }
-
-    #[test]
     fn build_command_plock_disable() {
         let cmd = ProtocolLockDisable;
         assert_eq!(cmd.get_command_string(), "PLOCK,0");
@@ -716,6 +700,22 @@ mod tests {
 
         let cmd = "PLOCK,0".parse::<ProtocolLockDisable>().unwrap();
         assert_eq!(cmd, ProtocolLockDisable);
+    }
+
+    #[test]
+    fn build_command_plock_enable() {
+        let cmd = ProtocolLockEnable;
+        assert_eq!(cmd.get_command_string(), "PLOCK,1");
+        assert_eq!(cmd.get_delay(), 300);
+    }
+
+    #[test]
+    fn parse_case_insensitive_command_plock_enable() {
+        let cmd = "plock,1".parse::<ProtocolLockEnable>().unwrap();
+        assert_eq!(cmd, ProtocolLockEnable);
+
+        let cmd = "PLOCK,1".parse::<ProtocolLockEnable>().unwrap();
+        assert_eq!(cmd, ProtocolLockEnable);
     }
 
     #[test]

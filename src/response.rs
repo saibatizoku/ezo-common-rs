@@ -35,6 +35,10 @@ impl DeviceInfo {
                 return Err(ErrorKind::ResponseParse.into());
             }
 
+            if firmware.len() == 0 || device.len() == 0 {
+                return Err(ErrorKind::ResponseParse.into());
+            }
+
             Ok (DeviceInfo { device, firmware } )
 
         } else {
@@ -331,41 +335,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parses_response_to_protocol_lock_status() {
-        let response = "?PLOCK,1";
-        assert_eq!(ProtocolLockStatus::parse(&response).unwrap(),
-                   ProtocolLockStatus::On);
-
-        let response = "?PLOCK,0";
-        assert_eq!(ProtocolLockStatus::parse(&response).unwrap(),
-                   ProtocolLockStatus::Off);
-    }
-
-    #[test]
-    fn parses_protocol_lock_status_to_response() {
-        let plock = ProtocolLockStatus::On;
-        assert_eq!(format!("{}", plock), "on");
-
-        let plock = ProtocolLockStatus::Off;
-        assert_eq!(format!("{}", plock), "off");
-    }
-
-    #[test]
-    fn parsing_invalid_protocol_lock_status_yields_error() {
-        let response = "";
-        assert!(ProtocolLockStatus::parse(&response).is_err());
-
-        let response = "?PLOCK,57";
-        assert!(ProtocolLockStatus::parse(&response).is_err());
-
-        let response = "?PLOCK,b";
-        assert!(ProtocolLockStatus::parse(&response).is_err());
-
-        let response = "?PLOCK,b,1";
-        assert!(ProtocolLockStatus::parse(&response).is_err());
-    }
-
-    #[test]
     fn parses_response_to_device_status() {
         let response = "?STATUS,P,1.5";
         assert_eq!(DeviceStatus::parse(response).unwrap(),
@@ -424,4 +393,210 @@ mod tests {
         assert!(DeviceStatus::parse(response).is_err());
     }
 
+    #[test]
+    fn parses_response_to_device_information() {
+        let response = "?I,RTD,2.01";
+        assert_eq!(DeviceInfo::parse(response).unwrap(),
+                   DeviceInfo {
+                       device: "RTD".to_string(),
+                       firmware: "2.01".to_string(),
+                   } );
+
+        let response = "?I,RTD,1.98";
+        assert_eq!(DeviceInfo::parse(response).unwrap(),
+                   DeviceInfo {
+                       device: "RTD".to_string(),
+                       firmware: "1.98".to_string(),
+                   } );
+    }
+
+    #[test]
+    fn parses_device_information_to_response() {
+        let device_info = DeviceInfo {
+            device: "RTD".to_string(),
+            firmware: "2.01".to_string(),
+        };
+        assert_eq!(format!("{}", device_info), "RTD,2.01");
+
+        let device_info = DeviceInfo {
+            device: "RTD".to_string(),
+            firmware: "1.98".to_string(),
+        };
+        assert_eq!(format!("{}", device_info), "RTD,1.98");
+    }
+
+    #[test]
+    fn parsing_invalid_device_info_yields_error() {
+        let response = "";
+        assert!(DeviceInfo::parse(response).is_err());
+
+        let response = "?I";
+        assert!(DeviceInfo::parse(response).is_err());
+
+        let response = "?I,";
+        assert!(DeviceInfo::parse(response).is_err());
+
+        let response = "?I,,";
+        assert!(DeviceInfo::parse(response).is_err());
+
+        let response = "?I,a,b,c";
+        assert!(DeviceInfo::parse(response).is_err());
+    }
+
+    #[test]
+    fn parses_response_to_export_info() {
+        let response = "?EXPORT,0,0";
+        assert_eq!(ExportedInfo::parse(response).unwrap(),
+                   ExportedInfo { lines: 0, total_bytes: 0 } );
+
+        let response = "?EXPORT,10,120";
+        assert_eq!(ExportedInfo::parse(response).unwrap(),
+                   ExportedInfo { lines: 10, total_bytes: 120 } );
+    }
+
+    #[test]
+    fn parses_export_info_to_response() {
+        let export_info = ExportedInfo { lines: 0, total_bytes: 0 };
+        assert_eq!(format!("{}", export_info), "0,0");
+
+        let export_info = ExportedInfo { lines: 10, total_bytes: 120 };
+        assert_eq!(format!("{}", export_info), "10,120");
+    }
+
+    #[test]
+    fn parsing_invalid_export_info_yields_error() {
+        let response = "?EXPORT,11,120,10";
+        assert!(ExportedInfo::parse(response).is_err());
+
+        let response = "?EXPORT,1012";
+        assert!(ExportedInfo::parse(response).is_err());
+
+        let response = "10,*DON";
+        assert!(ExportedInfo::parse(response).is_err());
+
+        let response = "12,";
+        assert!(ExportedInfo::parse(response).is_err());
+
+        let response = "";
+        assert!(ExportedInfo::parse(response).is_err());
+    }
+
+    #[test]
+    fn parses_response_to_data_export_string() {
+        let response = "0";
+        assert_eq!(Exported::parse(response).unwrap(),
+                   Exported::ExportString("0".to_string()));
+
+        let response = "012abc";
+        assert_eq!(Exported::parse(response).unwrap(),
+                   Exported::ExportString("012abc".to_string()));
+
+        let response = "123456abcdef";
+        assert_eq!(Exported::parse(response).unwrap(),
+                   Exported::ExportString("123456abcdef".to_string()));
+
+        let response = "*DONE";
+        assert_eq!(Exported::parse(response).unwrap(),
+                   Exported::Done);
+    }
+
+    #[test]
+    fn parses_data_export_string_to_response() {
+        let exported = Exported::ExportString("0".to_string());
+        assert_eq!(format!("{}", exported), "0");
+
+        let exported = Exported::ExportString("012abc".to_string());
+        assert_eq!(format!("{}", exported), "012abc");
+
+        let exported = Exported::ExportString("123456abcdef".to_string());
+        assert_eq!(format!("{}", exported), "123456abcdef");
+
+        let exported = Exported::ExportString("*DONE".to_string());
+        assert_eq!(format!("{}", exported), "*DONE");
+    }
+
+    #[test]
+    fn parsing_invalid_export_string_yields_error() {
+        let response = "*";
+        assert!(Exported::parse(response).is_err());
+
+        let response = "*DONE*";
+        assert!(Exported::parse(response).is_err());
+
+        let response = "**DONE";
+        assert!(Exported::parse(response).is_err());
+
+        let response = "12345678901234567890";
+        assert!(Exported::parse(response).is_err());
+    }
+
+    #[test]
+    fn parses_response_to_led_status() {
+        let response = "?L,1";
+        assert_eq!(LedStatus::parse(&response).unwrap(),
+                   LedStatus::On);
+
+        let response = "?L,0";
+        assert_eq!(LedStatus::parse(&response).unwrap(),
+                   LedStatus::Off);
+    }
+
+    #[test]
+    fn parses_led_status_to_response() {
+        let led = LedStatus::On;
+        assert_eq!(format!("{}", led), "on");
+
+        let led = LedStatus::Off;
+        assert_eq!(format!("{}", led), "off");
+    }
+
+    #[test]
+    fn parsing_invalid_led_status_yields_error() {
+        let response = "";
+        assert!(LedStatus::parse(&response).is_err());
+
+        let response = "?L,";
+        assert!(LedStatus::parse(&response).is_err());
+
+        let response = "?L,b";
+        assert!(LedStatus::parse(&response).is_err());
+
+        let response = "?L,17";
+        assert!(LedStatus::parse(&response).is_err());
+    }
+
+    #[test]
+    fn parses_response_to_protocol_lock_status() {
+        let response = "?PLOCK,1";
+        assert_eq!(ProtocolLockStatus::parse(&response).unwrap(),
+                   ProtocolLockStatus::On);
+
+        let response = "?PLOCK,0";
+        assert_eq!(ProtocolLockStatus::parse(&response).unwrap(),
+                   ProtocolLockStatus::Off);
+    }
+
+    #[test]
+    fn parses_protocol_lock_status_to_response() {
+        let plock = ProtocolLockStatus::On;
+        assert_eq!(format!("{}", plock), "on");
+
+        let plock = ProtocolLockStatus::Off;
+        assert_eq!(format!("{}", plock), "off");
+    }
+
+    #[test]
+    fn parsing_invalid_protocol_lock_status_yields_error() {
+        let response = "";
+        assert!(ProtocolLockStatus::parse(&response).is_err());
+
+        let response = "?PLOCK,57";
+        assert!(ProtocolLockStatus::parse(&response).is_err());
+
+        let response = "?PLOCK,b";
+        assert!(ProtocolLockStatus::parse(&response).is_err());
+
+        let response = "?PLOCK,b,1";
+        assert!(ProtocolLockStatus::parse(&response).is_err());
+    }
 }
