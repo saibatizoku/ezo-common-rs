@@ -13,6 +13,16 @@ pub enum ResponseStatus {
     None,
 }
 
+impl ResponseStatus {
+    pub fn parse(response: &str) -> Result<ResponseStatus> {
+        match response {
+            "Ack" => Ok(ResponseStatus::Ack),
+            "None" => Ok(ResponseStatus::None),
+            _ => Err(ErrorKind::ResponseParse.into()),
+        }
+    }
+}
+
 impl fmt::Display for ResponseStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
@@ -346,6 +356,32 @@ impl fmt::Display for LedStatus {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn parses_response_to_response_status_ack() {
+        let response = "Ack";
+        assert_eq!(ResponseStatus::parse(response).unwrap(),
+                   ResponseStatus::Ack);
+    }
+
+    #[test]
+    fn parses_response_to_response_status_none() {
+        let response = "None";
+        assert_eq!(ResponseStatus::parse(response).unwrap(),
+                   ResponseStatus::None);
+    }
+
+    #[test]
+    fn parses_response_status_ack_to_response() {
+        let response_status = ResponseStatus::Ack;
+        assert_eq!(format!("{}", response_status), "Ack");
+    }
+
+    #[test]
+    fn parses_response_status_none_to_response() {
+        let response_status = ResponseStatus::None;
+        assert_eq!(format!("{}", response_status), "None");
+    }
 
     #[test]
     fn parses_response_to_device_status() {
