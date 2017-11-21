@@ -159,6 +159,7 @@ pub fn string_from_response_data(response: &[u8]) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use response::ResponseStatus;
 
     #[test]
     fn converts_baud_rates_to_numbers() {

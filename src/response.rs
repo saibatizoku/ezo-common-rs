@@ -6,6 +6,19 @@ use std::str::FromStr;
 
 use errors::*;
 
+/// Response for commands that may or may not expect ACK.
+#[derive(Clone, Debug, PartialEq)]
+pub enum ResponseStatus {
+    Ack,
+    None,
+}
+
+impl fmt::Display for ResponseStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 /// Current firmware settings of the EZO chip.
 #[derive(Clone, PartialEq)]
 pub struct DeviceInfo {

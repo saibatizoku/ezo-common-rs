@@ -20,7 +20,7 @@ macro_rules! command_run_fn_common {
 #[macro_export]
 macro_rules! command_run_fn {
     (Ack) => {
-        fn run (&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<(), Self::Error> {
+        fn run (&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<ResponseStatus, Self::Error> {
 
             command_run_fn_common!(self, dev);
 
@@ -30,7 +30,7 @@ macro_rules! command_run_fn {
                 .chain_err(|| ErrorKind::I2CRead)?;
 
             match response_code(data_buffer[0]) {
-                ResponseCode::Success => Ok(()),
+                ResponseCode::Success => Ok(ResponseStatus::Ack),
 
                 ResponseCode::Pending => Err(ErrorKind::PendingResponse.into()),
 
@@ -43,11 +43,11 @@ macro_rules! command_run_fn {
         }
     };
     (NoAck) => {
-        fn run (&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<(), Self::Error> {
+        fn run (&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<ResponseStatus, Self::Error> {
 
             command_run_fn_common!(self, dev);
 
-            Ok (())
+            Ok (ResponseStatus::None)
         }
     };
     ($resp:ident : $response:ty, $run_func:block) => {
@@ -97,7 +97,7 @@ macro_rules! define_command_impl {
     ($name:ident, $command_string:block, $delay:expr) => {
         impl Command for $name {
             type Error = super::errors::Error;
-            type Response = ();
+            type Response = ResponseStatus;
 
             fn get_command_string(&self) -> String {
                 $command_string
@@ -113,7 +113,7 @@ macro_rules! define_command_impl {
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
         impl Command for $name {
             type Error = super::errors::Error;
-            type Response = ();
+            type Response = ResponseStatus;
 
             fn get_command_string(&self) -> String {
                 let $cmd = &self.0;
@@ -130,7 +130,7 @@ macro_rules! define_command_impl {
     ($name:ident, $command_string:block, $delay:expr, Ack) => {
         impl Command for $name {
             type Error = super::errors::Error;
-            type Response = ();
+            type Response = ResponseStatus;
 
             fn get_command_string(&self) -> String {
                 $command_string
@@ -146,7 +146,7 @@ macro_rules! define_command_impl {
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, Ack) => {
         impl Command for $name {
             type Error = super::errors::Error;
-            type Response = ();
+            type Response = ResponseStatus;
 
             fn get_command_string(&self) -> String {
                 let $cmd = &self.0;
