@@ -4,8 +4,6 @@
 use std::fmt;
 use std::str::FromStr;
 
-use errors::*;
-
 /// Response for commands that may or may not expect ACK.
 #[derive(Clone, Debug, PartialEq)]
 pub enum ResponseStatus {

@@ -1,14 +1,4 @@
 //! Commands common to EZO chips
-pub mod errors {
-    error_chain! {
-        errors {
-            BaudParse {
-                description ("could not parse Baud command")
-            }
-        }
-    }
-}
-
 use std::str::FromStr;
 use std::thread;
 use std::time::Duration;
@@ -23,7 +13,6 @@ use super::{
 };
 use super::response::*;
 
-use errors::*;
 
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::LinuxI2CDevice;
