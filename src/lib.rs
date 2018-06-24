@@ -4,11 +4,10 @@
 //! > Currently, only __I2C Mode__ is supported.
 
 #![recursion_limit = "1024"]
-
 #![feature(exclusive_range_pattern)]
 
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 extern crate i2cdev;
 
 #[macro_use]
