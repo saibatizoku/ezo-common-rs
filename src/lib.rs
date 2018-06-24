@@ -6,7 +6,6 @@
 #![recursion_limit = "1024"]
 
 #![feature(exclusive_range_pattern)]
-#![feature(inclusive_range_syntax)]
 
 #[macro_use]
 extern crate error_chain;
