@@ -7,7 +7,7 @@ repository = "https://github.com/saibatizoku/ezo-common-rs"
 [dependencies]
 chrono = "0.4.0"
 error-chain = "~0.11.0"
-i2cdev = "0.3.1"
+i2cdev = "0.4"
 
 [profile.release]
 lto = true
