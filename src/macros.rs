@@ -126,7 +126,7 @@ macro_rules! define_command_impl {
             command_run_fn! { NoAck }
         }
     };
-    ($name:ident, $command_string:block, $delay:expr, Ack) => {
+    ($name:ident, $command_string:block, $delay:expr,Ack) => {
         impl Command for $name {
             type Error = Error;
             type Response = ResponseStatus;
@@ -142,7 +142,7 @@ macro_rules! define_command_impl {
             command_run_fn! { Ack }
         }
     };
-    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, Ack) => {
+    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,Ack) => {
         impl Command for $name {
             type Error = Error;
             type Response = ResponseStatus;
@@ -159,8 +159,14 @@ macro_rules! define_command_impl {
             command_run_fn! { Ack }
         }
     };
-    ($name:ident, $command_string:block, $delay:expr,
-     $resp:ident : $response:ty, $run_func:block) => {
+    (
+        $name:ident,
+        $command_string:block,
+        $delay:expr,
+        $resp:ident :
+        $response:ty,
+        $run_func:block
+    ) => {
         impl Command for $name {
             type Error = Error;
             type Response = $response;
@@ -176,8 +182,15 @@ macro_rules! define_command_impl {
             command_run_fn! { $resp: $response, $run_func }
         }
     };
-    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
-     $resp:ident : $response:ty, $run_func:block) => {
+    (
+        $cmd:ident :
+        $name:ident($data:ty),
+        $command_string:block,
+        $delay:expr,
+        $resp:ident :
+        $response:ty,
+        $run_func:block
+    ) => {
         impl Command for $name {
             type Error = Error;
             type Response = $response;
@@ -228,8 +241,7 @@ macro_rules! define_command {
     //   doc: "docstring",
     //   Name, cmd_string_block, delay
     // }
-    (doc : $doc:tt,
-     $name:ident, $command_string:block, $delay:expr) => {
+    (doc: $doc:tt, $name:ident, $command_string:block, $delay:expr) => {
         #[ doc = $doc ]
         #[derive(Debug, PartialEq)]
         pub struct $name;
@@ -241,8 +253,7 @@ macro_rules! define_command {
     //   doc: "docstring",
     //   Name, cmd_string_block, delay, Ack
     // }
-    (doc : $doc:tt,
-     $name:ident, $command_string:block, $delay:expr, Ack) => {
+    (doc: $doc:tt, $name:ident, $command_string:block, $delay:expr,Ack) => {
         #[ doc = $doc ]
         #[derive(Debug, PartialEq)]
         pub struct $name;
@@ -255,9 +266,16 @@ macro_rules! define_command {
     //   Name, cmd_string_block, delay,
     //   _data: ResponseType, resp_expr
     // }
-    (doc : $doc:tt,
-     $name:ident, $command_string:block, $delay:expr,
-     $resp:ident : $response:ty, $run_func:block) => {
+    (
+        doc:
+        $doc:tt,
+        $name:ident,
+        $command_string:block,
+        $delay:expr,
+        $resp:ident :
+        $response:ty,
+        $run_func:block
+    ) => {
         #[ doc = $doc ]
         #[derive(Debug, PartialEq)]
         pub struct $name;
@@ -272,8 +290,7 @@ macro_rules! define_command {
     //   doc: "docstring",
     //   cmd: Name(type), cmd_string_block, delay
     // }
-    (doc : $doc:tt,
-     $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
+    (doc: $doc:tt, $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
         #[ doc = $doc ]
         #[derive(Debug, PartialEq)]
         pub struct $name(pub $data);
@@ -287,8 +304,7 @@ macro_rules! define_command {
     //   doc: "docstring",
     //   cmd: Name(type), cmd_string_block, delay, Ack
     // }
-    (doc : $doc:tt,
-     $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, Ack) => {
+    (doc: $doc:tt, $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,Ack) => {
         #[ doc = $doc ]
         #[derive(Debug, PartialEq)]
         pub struct $name(pub $data);
@@ -303,9 +319,17 @@ macro_rules! define_command {
     //   cmd: Name(type), cmd_string_block, delay,
     //   _data: ResponseType, resp_expr
     // }
-    (doc : $doc:tt,
-     $cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
-     $resp:ident : $response:ty, $run_func:block) => {
+    (
+        doc:
+        $doc:tt,
+        $cmd:ident :
+        $name:ident($data:ty),
+        $command_string:block,
+        $delay:expr,
+        $resp:ident :
+        $response:ty,
+        $run_func:block
+    ) => {
         #[ doc = $doc ]
         #[derive(Debug, PartialEq)]
         pub struct $name(pub $data);
@@ -332,7 +356,7 @@ macro_rules! define_command {
     // {
     //   Name, cmd_string_block, delay, Ack
     // }
-    ($name:ident, $command_string:block, $delay:expr, Ack) => {
+    ($name:ident, $command_string:block, $delay:expr,Ack) => {
         #[derive(Debug, PartialEq)]
         pub struct $name;
 
@@ -343,8 +367,14 @@ macro_rules! define_command {
     //   Name, cmd_string_block, delay,
     //   _data: ResponseType, resp_expr
     // }
-    ($name:ident, $command_string:block, $delay:expr,
-     $resp:ident : $response:ty, $run_func:block) => {
+    (
+        $name:ident,
+        $command_string:block,
+        $delay:expr,
+        $resp:ident :
+        $response:ty,
+        $run_func:block
+    ) => {
         #[derive(Debug, PartialEq)]
         pub struct $name;
 
@@ -369,7 +399,7 @@ macro_rules! define_command {
     // {
     //   cmd: Name(type), cmd_string_block, delay, Ack
     // }
-    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, Ack) => {
+    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,Ack) => {
         #[derive(Debug, PartialEq)]
         pub struct $name(pub $data);
 
@@ -382,8 +412,15 @@ macro_rules! define_command {
     //   cmd: Name(type), cmd_string_block, delay,
     //   _data: ResponseType, resp_expr
     // }
-    ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
-     $resp:ident : $response:ty, $run_func:block) => {
+    (
+        $cmd:ident :
+        $name:ident($data:ty),
+        $command_string:block,
+        $delay:expr,
+        $resp:ident :
+        $response:ty,
+        $run_func:block
+    ) => {
         #[derive(Debug, PartialEq)]
         pub struct $name(pub $data);
 

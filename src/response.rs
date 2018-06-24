@@ -63,8 +63,7 @@ impl DeviceInfo {
                 return Err(ErrorKind::ResponseParse.into());
             }
 
-            Ok (DeviceInfo { device, firmware } )
-
+            Ok(DeviceInfo { device, firmware })
         } else {
             Err(ErrorKind::ResponseParse.into())
         }
@@ -151,9 +150,9 @@ impl DeviceStatus {
             }
 
             Ok(DeviceStatus {
-                   restart_reason: restart_reason,
-                   vcc_voltage: voltage,
-               })
+                restart_reason: restart_reason,
+                vcc_voltage: voltage,
+            })
         } else {
             Err(ErrorKind::ResponseParse.into())
         }
@@ -162,7 +161,11 @@ impl DeviceStatus {
 
 impl fmt::Debug for DeviceStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "?STATUS,{:?},{:.*}", self.restart_reason, 3, self.vcc_voltage)
+        write!(
+            f,
+            "?STATUS,{:?},{:.*}",
+            self.restart_reason, 3, self.vcc_voltage
+        )
     }
 }
 
@@ -243,7 +246,7 @@ impl ExportedInfo {
                 return Err(ErrorKind::ResponseParse.into());
             }
 
-            Ok (ExportedInfo { lines, total_bytes } )
+            Ok(ExportedInfo { lines, total_bytes })
         } else {
             Err(ErrorKind::ResponseParse.into())
         }
@@ -350,7 +353,6 @@ impl fmt::Display for LedStatus {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -358,15 +360,19 @@ mod tests {
     #[test]
     fn parses_response_to_response_status_ack() {
         let response = "Ack";
-        assert_eq!(ResponseStatus::parse(response).unwrap(),
-                   ResponseStatus::Ack);
+        assert_eq!(
+            ResponseStatus::parse(response).unwrap(),
+            ResponseStatus::Ack
+        );
     }
 
     #[test]
     fn parses_response_to_response_status_none() {
         let response = "None";
-        assert_eq!(ResponseStatus::parse(response).unwrap(),
-                   ResponseStatus::None);
+        assert_eq!(
+            ResponseStatus::parse(response).unwrap(),
+            ResponseStatus::None
+        );
     }
 
     #[test]
@@ -384,32 +390,40 @@ mod tests {
     #[test]
     fn parses_response_to_device_status() {
         let response = "?STATUS,P,1.5";
-        assert_eq!(DeviceStatus::parse(response).unwrap(),
-                   DeviceStatus {
-                       restart_reason: RestartReason::PoweredOff,
-                       vcc_voltage: 1.5,
-                   });
+        assert_eq!(
+            DeviceStatus::parse(response).unwrap(),
+            DeviceStatus {
+                restart_reason: RestartReason::PoweredOff,
+                vcc_voltage: 1.5,
+            }
+        );
 
         let response = "?STATUS,S,1.5";
-        assert_eq!(DeviceStatus::parse(response).unwrap(),
-                   DeviceStatus {
-                       restart_reason: RestartReason::SoftwareReset,
-                       vcc_voltage: 1.5,
-                   });
+        assert_eq!(
+            DeviceStatus::parse(response).unwrap(),
+            DeviceStatus {
+                restart_reason: RestartReason::SoftwareReset,
+                vcc_voltage: 1.5,
+            }
+        );
 
         let response = "?STATUS,B,1.5";
-        assert_eq!(DeviceStatus::parse(response).unwrap(),
-                   DeviceStatus {
-                       restart_reason: RestartReason::BrownOut,
-                       vcc_voltage: 1.5,
-                   });
+        assert_eq!(
+            DeviceStatus::parse(response).unwrap(),
+            DeviceStatus {
+                restart_reason: RestartReason::BrownOut,
+                vcc_voltage: 1.5,
+            }
+        );
 
         let response = "?STATUS,W,1.5";
-        assert_eq!(DeviceStatus::parse(response).unwrap(),
-                   DeviceStatus {
-                       restart_reason: RestartReason::Watchdog,
-                       vcc_voltage: 1.5,
-                   });
+        assert_eq!(
+            DeviceStatus::parse(response).unwrap(),
+            DeviceStatus {
+                restart_reason: RestartReason::Watchdog,
+                vcc_voltage: 1.5,
+            }
+        );
 
         let response = "?STATUS,U,1.5";
         let device_status = DeviceStatus {
@@ -443,18 +457,22 @@ mod tests {
     #[test]
     fn parses_response_to_device_information() {
         let response = "?I,RTD,2.01";
-        assert_eq!(DeviceInfo::parse(response).unwrap(),
-                   DeviceInfo {
-                       device: "RTD".to_string(),
-                       firmware: "2.01".to_string(),
-                   } );
+        assert_eq!(
+            DeviceInfo::parse(response).unwrap(),
+            DeviceInfo {
+                device: "RTD".to_string(),
+                firmware: "2.01".to_string(),
+            }
+        );
 
         let response = "?I,RTD,1.98";
-        assert_eq!(DeviceInfo::parse(response).unwrap(),
-                   DeviceInfo {
-                       device: "RTD".to_string(),
-                       firmware: "1.98".to_string(),
-                   } );
+        assert_eq!(
+            DeviceInfo::parse(response).unwrap(),
+            DeviceInfo {
+                device: "RTD".to_string(),
+                firmware: "1.98".to_string(),
+            }
+        );
     }
 
     #[test]
@@ -493,20 +511,36 @@ mod tests {
     #[test]
     fn parses_response_to_export_info() {
         let response = "?EXPORT,0,0";
-        assert_eq!(ExportedInfo::parse(response).unwrap(),
-                   ExportedInfo { lines: 0, total_bytes: 0 } );
+        assert_eq!(
+            ExportedInfo::parse(response).unwrap(),
+            ExportedInfo {
+                lines: 0,
+                total_bytes: 0
+            }
+        );
 
         let response = "?EXPORT,10,120";
-        assert_eq!(ExportedInfo::parse(response).unwrap(),
-                   ExportedInfo { lines: 10, total_bytes: 120 } );
+        assert_eq!(
+            ExportedInfo::parse(response).unwrap(),
+            ExportedInfo {
+                lines: 10,
+                total_bytes: 120
+            }
+        );
     }
 
     #[test]
     fn parses_export_info_to_response() {
-        let export_info = ExportedInfo { lines: 0, total_bytes: 0 };
+        let export_info = ExportedInfo {
+            lines: 0,
+            total_bytes: 0,
+        };
         assert_eq!(format!("{}", export_info), "0,0");
 
-        let export_info = ExportedInfo { lines: 10, total_bytes: 120 };
+        let export_info = ExportedInfo {
+            lines: 10,
+            total_bytes: 120,
+        };
         assert_eq!(format!("{}", export_info), "10,120");
     }
 
@@ -531,20 +565,25 @@ mod tests {
     #[test]
     fn parses_response_to_data_export_string() {
         let response = "0";
-        assert_eq!(Exported::parse(response).unwrap(),
-                   Exported::ExportString("0".to_string()));
+        assert_eq!(
+            Exported::parse(response).unwrap(),
+            Exported::ExportString("0".to_string())
+        );
 
         let response = "012abc";
-        assert_eq!(Exported::parse(response).unwrap(),
-                   Exported::ExportString("012abc".to_string()));
+        assert_eq!(
+            Exported::parse(response).unwrap(),
+            Exported::ExportString("012abc".to_string())
+        );
 
         let response = "123456abcdef";
-        assert_eq!(Exported::parse(response).unwrap(),
-                   Exported::ExportString("123456abcdef".to_string()));
+        assert_eq!(
+            Exported::parse(response).unwrap(),
+            Exported::ExportString("123456abcdef".to_string())
+        );
 
         let response = "*DONE";
-        assert_eq!(Exported::parse(response).unwrap(),
-                   Exported::Done);
+        assert_eq!(Exported::parse(response).unwrap(), Exported::Done);
     }
 
     #[test]
@@ -580,12 +619,10 @@ mod tests {
     #[test]
     fn parses_response_to_led_status() {
         let response = "?L,1";
-        assert_eq!(LedStatus::parse(&response).unwrap(),
-                   LedStatus::On);
+        assert_eq!(LedStatus::parse(&response).unwrap(), LedStatus::On);
 
         let response = "?L,0";
-        assert_eq!(LedStatus::parse(&response).unwrap(),
-                   LedStatus::Off);
+        assert_eq!(LedStatus::parse(&response).unwrap(), LedStatus::Off);
     }
 
     #[test]
@@ -615,12 +652,16 @@ mod tests {
     #[test]
     fn parses_response_to_protocol_lock_status() {
         let response = "?PLOCK,1";
-        assert_eq!(ProtocolLockStatus::parse(&response).unwrap(),
-                   ProtocolLockStatus::On);
+        assert_eq!(
+            ProtocolLockStatus::parse(&response).unwrap(),
+            ProtocolLockStatus::On
+        );
 
         let response = "?PLOCK,0";
-        assert_eq!(ProtocolLockStatus::parse(&response).unwrap(),
-                   ProtocolLockStatus::Off);
+        assert_eq!(
+            ProtocolLockStatus::parse(&response).unwrap(),
+            ProtocolLockStatus::Off
+        );
     }
 
     #[test]

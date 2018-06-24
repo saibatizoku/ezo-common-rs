@@ -100,7 +100,7 @@ impl BpsRate {
 }
 
 /// Known response codes from EZO chip interactions.
-#[derive(Clone,Debug,PartialEq,Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ResponseCode {
     NoDataExpected = 0xFF,
     Pending = 0xFE,
@@ -201,8 +201,10 @@ mod tests {
         assert_eq!(string_from_response_data(&b"hello\0"[..]).unwrap(), "hello");
 
         // high bit is on in the last character
-        assert_eq!(string_from_response_data(&b"hell\xef\0"[..]).unwrap(),
-                   "hello");
+        assert_eq!(
+            string_from_response_data(&b"hell\xef\0"[..]).unwrap(),
+            "hello"
+        );
     }
 
     fn assert_converts_to_malformed_response(data: &[u8]) {

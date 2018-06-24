@@ -3,11 +3,11 @@ use std::str::FromStr;
 use std::thread;
 use std::time::Duration;
 
+use super::response::*;
 use super::{ErrorKind, Result};
 use super::{
     response_code, string_from_response_data, write_to_ezo, BpsRate, Command, ResponseCode,
 };
-use super::response::*;
 
 use failure::{Error, ResultExt};
 
