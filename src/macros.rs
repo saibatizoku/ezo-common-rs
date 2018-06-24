@@ -95,7 +95,7 @@ macro_rules! command_run_fn {
 macro_rules! define_command_impl {
     ($name:ident, $command_string:block, $delay:expr) => {
         impl Command for $name {
-            type Error = super::errors::Error;
+            type Error = Error;
             type Response = ResponseStatus;
 
             fn get_command_string(&self) -> String {
@@ -111,7 +111,7 @@ macro_rules! define_command_impl {
     };
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
         impl Command for $name {
-            type Error = super::errors::Error;
+            type Error = Error;
             type Response = ResponseStatus;
 
             fn get_command_string(&self) -> String {
@@ -128,7 +128,7 @@ macro_rules! define_command_impl {
     };
     ($name:ident, $command_string:block, $delay:expr, Ack) => {
         impl Command for $name {
-            type Error = super::errors::Error;
+            type Error = Error;
             type Response = ResponseStatus;
 
             fn get_command_string(&self) -> String {
@@ -144,7 +144,7 @@ macro_rules! define_command_impl {
     };
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr, Ack) => {
         impl Command for $name {
-            type Error = super::errors::Error;
+            type Error = Error;
             type Response = ResponseStatus;
 
             fn get_command_string(&self) -> String {
@@ -162,7 +162,7 @@ macro_rules! define_command_impl {
     ($name:ident, $command_string:block, $delay:expr,
      $resp:ident : $response:ty, $run_func:block) => {
         impl Command for $name {
-            type Error = super::errors::Error;
+            type Error = Error;
             type Response = $response;
 
             fn get_command_string(&self) -> String {
@@ -179,7 +179,7 @@ macro_rules! define_command_impl {
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,
      $resp:ident : $response:ty, $run_func:block) => {
         impl Command for $name {
-            type Error = super::errors::Error;
+            type Error = Error;
             type Response = $response;
 
             fn get_command_string(&self) -> String {
