@@ -1,8 +1,11 @@
 //! Parses I2C responses from the EC EZO Chip.
 //!
 //! Code modified from "Federico Mena Quintero <federico@gnome.org>"'s original.
+use super::{ErrorKind, Result};
+
 use std::fmt;
 use std::str::FromStr;
+use failure::ResultExt;
 
 /// Response for commands that may or may not expect ACK.
 #[derive(Clone, Debug, PartialEq)]
@@ -138,8 +141,7 @@ impl DeviceStatus {
             };
 
             let voltage = if let Some(voltage_str) = split.next() {
-                f64::from_str(voltage_str)
-                    .chain_err(|| ErrorKind::ResponseParse)?
+                f64::from_str(voltage_str).context(ErrorKind::ResponseParse)?
             } else {
                 return Err(ErrorKind::ResponseParse.into());
             };
@@ -226,15 +228,13 @@ impl ExportedInfo {
             let mut split = num_str.split(",");
 
             let lines = if let Some(lines_str) = split.next() {
-                u16::from_str(lines_str)
-                    .chain_err(|| ErrorKind::ResponseParse)?
+                u16::from_str(lines_str).context(ErrorKind::ResponseParse)?
             } else {
                 return Err(ErrorKind::ResponseParse.into());
             };
 
             let total_bytes = if let Some(totalbytes_str) = split.next() {
-                u16::from_str(totalbytes_str)
-                    .chain_err(|| ErrorKind::ResponseParse)?
+                u16::from_str(totalbytes_str).context(ErrorKind::ResponseParse)?
             } else {
                 return Err(ErrorKind::ResponseParse.into());
             };

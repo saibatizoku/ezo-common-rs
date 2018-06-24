@@ -3,16 +3,13 @@ use std::str::FromStr;
 use std::thread;
 use std::time::Duration;
 
+use super::{ErrorKind, Result};
 use super::{
-    Command,
-    BpsRate,
-    ResponseCode,
-    response_code,
-    string_from_response_data,
-    write_to_ezo,
+    response_code, string_from_response_data, write_to_ezo, BpsRate, Command, ResponseCode,
 };
 use super::response::*;
 
+use failure::{Error, ResultExt};
 
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::LinuxI2CDevice;
@@ -85,10 +82,7 @@ impl FromStr for DeviceAddress {
             let rest = supper.get(4..).unwrap();
             let mut split = rest.split(',');
             let value = match split.next() {
-                Some(n) => {
-                    n.parse::<u16>()
-                        .chain_err(|| ErrorKind::CommandParse)?
-                }
+                Some(n) => n.parse::<u16>().context(ErrorKind::CommandParse)?,
                 _ => bail!(ErrorKind::CommandParse),
             };
             match split.next() {
@@ -203,9 +197,7 @@ impl FromStr for Import {
             let rest = supper.get(7..).unwrap();
             let mut split = rest.split(',');
             let value = match split.next() {
-                Some(n) if n.len() > 0 && n.len() < 13 => {
-                    n.to_string()
-                }
+                Some(n) if n.len() > 0 && n.len() < 13 => n.to_string(),
                 _ => bail!(ErrorKind::CommandParse),
             };
             match split.next() {

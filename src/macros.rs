@@ -1,11 +1,10 @@
 /// The most common `fn run` implementation.
 #[macro_export]
 macro_rules! command_run_fn_common {
-    ( $self:ident, $dev:ident ) => {
+    ($self:ident, $dev:ident) => {
         let cmd = $self.get_command_string();
 
-        let _w = write_to_ezo($dev, &cmd)
-            .chain_err(|| "Error writing to EZO device.")?;
+        let _w = write_to_ezo($dev, &cmd).context("Error writing to EZO device.")?;
 
         let delay = $self.get_delay();
 
@@ -27,7 +26,7 @@ macro_rules! command_run_fn {
             let mut data_buffer = [0u8; MAX_DATA];
 
             let _r = dev.read(&mut data_buffer)
-                .chain_err(|| ErrorKind::I2CRead)?;
+                .context(ErrorKind::I2CRead)?;
 
             match response_code(data_buffer[0]) {
                 ResponseCode::Success => Ok(ResponseStatus::Ack),
@@ -58,14 +57,14 @@ macro_rules! command_run_fn {
             let mut data_buffer = [0u8; MAX_DATA];
 
             let _r = dev.read(&mut data_buffer)
-                .chain_err(|| ErrorKind::I2CRead)?;
+                .context(ErrorKind::I2CRead)?;
 
             let resp_string = match response_code(data_buffer[0]) {
                 ResponseCode::Success => {
                     match data_buffer.iter().position(|&c| c == 0) {
                         Some(len) => {
                             string_from_response_data(&data_buffer[1..=len])
-                                .chain_err(|| ErrorKind::MalformedResponse)
+                                .context(ErrorKind::MalformedResponse)
                         }
                         _ => bail!(ErrorKind::MalformedResponse),
                     }

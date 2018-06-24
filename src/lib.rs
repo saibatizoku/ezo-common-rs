@@ -18,11 +18,14 @@ pub mod errors;
 pub mod response;
 
 use errors::*;
+use failure::{Error, ResultExt};
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::LinuxI2CDevice;
 use std::ffi::{CStr, CString};
 use std::thread;
 use std::time::Duration;
+
+pub type Result<T> = std::result::Result<T, Error>;
 
 /// Default buffer size for ASCII data responses.
 ///
@@ -108,11 +111,11 @@ pub enum ResponseCode {
 
 /// Writes the ASCII command to the EZO chip, with one retry.
 pub fn write_to_ezo(dev: &mut LinuxI2CDevice, cmd_str: &str) -> Result<()> {
-    let cmd = CString::new(cmd_str)
-        .chain_err(|| "Command cannot be used")?;
+    let cmd = CString::new(cmd_str).context("Command cannot be used")?;
     if let Err(_) = dev.write(cmd.as_bytes_with_nul()) {
         thread::sleep(Duration::from_millis(100));
-        dev.write(cmd.as_bytes_with_nul()).chain_err(|| "Command could not be sent")?;
+        dev.write(cmd.as_bytes_with_nul())
+            .context("Command could not be sent")?;
     };
     Ok(())
 }
@@ -138,21 +141,19 @@ fn turn_off_high_bits(v: &mut [u8]) {
 /// byte for the response code.  Then, pass a slice with the rest of
 /// the buffer (without that first byte) to this function to get an
 /// UTF-8 string.
-pub fn string_from_response_data(response: &[u8]) -> Result<String> {
+pub fn string_from_response_data(response: &[u8]) -> std::result::Result<String, EzoError> {
     let mut buf = response.to_owned();
     turn_off_high_bits(&mut buf);
 
-    let terminated = CStr::from_bytes_with_nul(&buf)
-        .chain_err(|| ErrorKind::MalformedResponse)?;
+    let terminated = CStr::from_bytes_with_nul(&buf).context(ErrorKind::MalformedResponse)?;
 
     let s = terminated
         .to_str()
-        .chain_err(|| ErrorKind::MalformedResponse)?
+        .context(ErrorKind::MalformedResponse)?
         .to_owned();
 
     Ok(s)
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -208,7 +209,7 @@ mod tests {
         let result = string_from_response_data(&data);
 
         match result {
-            Err(Error(ErrorKind::MalformedResponse, _)) => (),
+            Err(e) => assert_eq!(e.kind(), ErrorKind::MalformedResponse),
             _ => unreachable!(),
         }
     }
