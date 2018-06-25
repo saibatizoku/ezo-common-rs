@@ -7,10 +7,6 @@ A library with shared functionality for the `EZO` chip, made by Atlas Scientific
 
 ## Requirements
 
-This version needs _nightly_ to compile, since it makes use of `#![feature(inclusive_range_syntax)]`.
-
-This crate makes use of `error-chain` to handle errors. Include it in your dependencies to make use of it.
-
 This crate makes use of `i2cdev` to handle errors. Include it in your dependencies to make use of it.
 
 ## Usage
@@ -18,7 +14,7 @@ This crate makes use of `i2cdev` to handle errors. Include it in your dependenci
 First, add this to your `Cargo.toml`:
 
 ```
-ezo_common = "0.1.0"
+ezo_common = "0.1"
 ```
 
 ## Crates for specific EZO chips
