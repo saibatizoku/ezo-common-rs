@@ -1,16 +1,14 @@
 //! Commands common to EZO chips
+use super::{
+    response::*, response_code, string_from_response_data, write_to_ezo, BpsRate, Command,
+    ErrorKind, EzoError, ResponseCode,
+};
+
 use std::str::FromStr;
 use std::thread;
 use std::time::Duration;
 
-use super::response::*;
-use super::{ErrorKind, Result};
-use super::{
-    response_code, string_from_response_data, write_to_ezo, BpsRate, Command, ResponseCode,
-};
-
-use failure::{Error, ResultExt};
-
+use failure::ResultExt;
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::LinuxI2CDevice;
 
@@ -23,12 +21,12 @@ define_command! {
 }
 
 impl FromStr for Baud {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         if supper.starts_with("BAUD,") {
-            let rest = supper.get(5..).unwrap();
+            let rest = supper.get(5..).ok_or(ErrorKind::CommandParse)?;
             let mut split = rest.split(',');
             let rate = match split.next() {
                 Some("300") => BpsRate::Bps300,
@@ -39,15 +37,14 @@ impl FromStr for Baud {
                 Some("38400") => BpsRate::Bps38400,
                 Some("57600") => BpsRate::Bps57600,
                 Some("115200") => BpsRate::Bps115200,
-                _ => bail!(ErrorKind::BpsRateParse),
+                _ => return Err(ErrorKind::BpsRateParse)?,
             };
             match split.next() {
                 None => return Ok(Baud(rate)),
-                _ => bail!(ErrorKind::BaudParse),
+                _ => return Err(ErrorKind::BaudParse)?,
             }
-        } else {
-            bail!(ErrorKind::BaudParse);
         }
+        Err(ErrorKind::BaudParse)?
     }
 }
 
@@ -57,13 +54,13 @@ define_command! {
 }
 
 impl FromStr for CalibrationClear {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "CAL,CLEAR" => Ok(CalibrationClear),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -74,23 +71,23 @@ define_command! {
 }
 
 impl FromStr for DeviceAddress {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         if supper.starts_with("I2C,") {
-            let rest = supper.get(4..).unwrap();
+            let rest = supper.get(4..).ok_or(ErrorKind::CommandParse)?;
             let mut split = rest.split(',');
             let value = match split.next() {
                 Some(n) => n.parse::<u16>().context(ErrorKind::CommandParse)?,
-                _ => bail!(ErrorKind::CommandParse),
+                _ => return Err(ErrorKind::CommandParse)?,
             };
             match split.next() {
                 None => return Ok(DeviceAddress(value)),
-                _ => bail!(ErrorKind::CommandParse),
+                _ => return Err(ErrorKind::CommandParse)?,
             }
         } else {
-            bail!(ErrorKind::CommandParse);
+            Err(ErrorKind::CommandParse)?
         }
     }
 }
@@ -102,13 +99,13 @@ define_command! {
 }
 
 impl FromStr for DeviceInformation {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "I" => Ok(DeviceInformation),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -120,13 +117,13 @@ define_command! {
 }
 
 impl FromStr for Export {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "EXPORT" => Ok(Export),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -138,13 +135,13 @@ define_command! {
 }
 
 impl FromStr for ExportInfo {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "EXPORT,?" => Ok(ExportInfo),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -155,13 +152,13 @@ define_command! {
 }
 
 impl FromStr for Factory {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "FACTORY" => Ok(Factory),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -172,13 +169,13 @@ define_command! {
 }
 
 impl FromStr for Find {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "F" => Ok(Find),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -189,23 +186,23 @@ define_command! {
 }
 
 impl FromStr for Import {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         if supper.starts_with("IMPORT,") {
-            let rest = supper.get(7..).unwrap();
+            let rest = supper.get(7..).ok_or(ErrorKind::CommandParse)?;
             let mut split = rest.split(',');
             let value = match split.next() {
                 Some(n) if n.len() > 0 && n.len() < 13 => n.to_string(),
-                _ => bail!(ErrorKind::CommandParse),
+                _ => Err(ErrorKind::CommandParse)?,
             };
             match split.next() {
                 None => return Ok(Import(value)),
-                _ => bail!(ErrorKind::CommandParse),
+                _ => Err(ErrorKind::CommandParse)?,
             }
         } else {
-            bail!(ErrorKind::CommandParse);
+            Err(ErrorKind::CommandParse)?
         }
     }
 }
@@ -216,13 +213,13 @@ define_command! {
 }
 
 impl FromStr for LedOff {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "L,0" => Ok(LedOff),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -233,13 +230,13 @@ define_command! {
 }
 
 impl FromStr for LedOn {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "L,1" => Ok(LedOn),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -251,13 +248,13 @@ define_command! {
 }
 
 impl FromStr for LedState {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "L,?" => Ok(LedState),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -268,13 +265,13 @@ define_command! {
 }
 
 impl FromStr for ProtocolLockDisable {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "PLOCK,0" => Ok(ProtocolLockDisable),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -285,13 +282,13 @@ define_command! {
 }
 
 impl FromStr for ProtocolLockEnable {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "PLOCK,1" => Ok(ProtocolLockEnable),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -303,13 +300,13 @@ define_command! {
 }
 
 impl FromStr for ProtocolLockState {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "PLOCK,?" => Ok(ProtocolLockState),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -320,13 +317,13 @@ define_command! {
 }
 
 impl FromStr for Sleep {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "SLEEP" => Ok(Sleep),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -338,13 +335,13 @@ define_command! {
 }
 
 impl FromStr for Status {
-    type Err = Error;
+    type Err = EzoError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, EzoError> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "STATUS" => Ok(Status),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }

@@ -4,7 +4,7 @@ macro_rules! command_run_fn_common {
     ($self:ident, $dev:ident) => {
         let cmd = $self.get_command_string();
 
-        let _w = write_to_ezo($dev, &cmd).context("Error writing to EZO device.")?;
+        let _w = write_to_ezo($dev, &cmd)?;
 
         let delay = $self.get_delay();
 
@@ -66,17 +66,17 @@ macro_rules! command_run_fn {
                             string_from_response_data(&data_buffer[1..=len])
                                 .context(ErrorKind::MalformedResponse)
                         }
-                        _ => bail!(ErrorKind::MalformedResponse),
+                        _ => return Err(ErrorKind::MalformedResponse)?,
                     }
                 }
 
-                ResponseCode::Pending => bail!(ErrorKind::PendingResponse),
+                ResponseCode::Pending => return Err(ErrorKind::PendingResponse)?,
 
-                ResponseCode::DeviceError => bail!(ErrorKind::DeviceErrorResponse),
+                ResponseCode::DeviceError => return Err(ErrorKind::DeviceErrorResponse)?,
 
-                ResponseCode::NoDataExpected => bail!(ErrorKind::NoDataExpectedResponse),
+                ResponseCode::NoDataExpected => return Err(ErrorKind::NoDataExpectedResponse)?,
 
-                ResponseCode::UnknownError => bail!(ErrorKind::MalformedResponse),
+                ResponseCode::UnknownError => return Err(ErrorKind::MalformedResponse)?,
             };
             let $resp = resp_string?;
             $run_func
@@ -95,7 +95,7 @@ macro_rules! command_run_fn {
 macro_rules! define_command_impl {
     ($name:ident, $command_string:block, $delay:expr) => {
         impl Command for $name {
-            type Error = Error;
+            type Error = EzoError;
             type Response = ResponseStatus;
 
             fn get_command_string(&self) -> String {
@@ -111,7 +111,7 @@ macro_rules! define_command_impl {
     };
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
         impl Command for $name {
-            type Error = Error;
+            type Error = EzoError;
             type Response = ResponseStatus;
 
             fn get_command_string(&self) -> String {
@@ -128,7 +128,7 @@ macro_rules! define_command_impl {
     };
     ($name:ident, $command_string:block, $delay:expr,Ack) => {
         impl Command for $name {
-            type Error = Error;
+            type Error = EzoError;
             type Response = ResponseStatus;
 
             fn get_command_string(&self) -> String {
@@ -144,7 +144,7 @@ macro_rules! define_command_impl {
     };
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,Ack) => {
         impl Command for $name {
-            type Error = Error;
+            type Error = EzoError;
             type Response = ResponseStatus;
 
             fn get_command_string(&self) -> String {
@@ -168,7 +168,7 @@ macro_rules! define_command_impl {
         $run_func:block
     ) => {
         impl Command for $name {
-            type Error = Error;
+            type Error = EzoError;
             type Response = $response;
 
             fn get_command_string(&self) -> String {
@@ -192,7 +192,7 @@ macro_rules! define_command_impl {
         $run_func:block
     ) => {
         impl Command for $name {
-            type Error = Error;
+            type Error = EzoError;
             type Response = $response;
 
             fn get_command_string(&self) -> String {

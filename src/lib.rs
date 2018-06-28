@@ -15,15 +15,14 @@ pub mod command;
 pub mod errors;
 pub mod response;
 
-use errors::*;
-use failure::{Error, ResultExt};
-use i2cdev::core::I2CDevice;
-use i2cdev::linux::LinuxI2CDevice;
 use std::ffi::{CStr, CString};
 use std::thread;
 use std::time::Duration;
 
-pub type Result<T> = std::result::Result<T, Error>;
+use errors::*;
+use failure::ResultExt;
+use i2cdev::core::I2CDevice;
+use i2cdev::linux::LinuxI2CDevice;
 
 /// Default buffer size for ASCII data responses.
 ///
@@ -38,7 +37,7 @@ pub trait Command {
 
     fn get_command_string(&self) -> String;
     fn get_delay(&self) -> u64;
-    fn run(&self, dev: &mut LinuxI2CDevice) -> ::std::result::Result<Self::Response, Self::Error>;
+    fn run(&self, dev: &mut LinuxI2CDevice) -> Result<Self::Response, Self::Error>;
 }
 
 /// Determines the response code sent by the EZO chip.
@@ -68,7 +67,7 @@ pub enum BpsRate {
 
 impl BpsRate {
     /// Returns the `BpsRate` from a `u32` value.
-    pub fn parse_u32(bps_rate: u32) -> Result<BpsRate> {
+    pub fn parse_u32(bps_rate: u32) -> Result<BpsRate, EzoError> {
         let bps = match bps_rate {
             x if x == BpsRate::Bps300 as u32 => BpsRate::Bps300,
             x if x == BpsRate::Bps1200 as u32 => BpsRate::Bps1200,
@@ -78,7 +77,7 @@ impl BpsRate {
             x if x == BpsRate::Bps38400 as u32 => BpsRate::Bps38400,
             x if x == BpsRate::Bps57600 as u32 => BpsRate::Bps57600,
             x if x == BpsRate::Bps115200 as u32 => BpsRate::Bps115200,
-            _ => return Err(ErrorKind::BpsRateParse.into()),
+            _ => return Err(ErrorKind::BpsRateParse)?,
         };
         Ok(bps)
     }
@@ -108,12 +107,12 @@ pub enum ResponseCode {
 }
 
 /// Writes the ASCII command to the EZO chip, with one retry.
-pub fn write_to_ezo(dev: &mut LinuxI2CDevice, cmd_str: &str) -> Result<()> {
-    let cmd = CString::new(cmd_str).context("Command cannot be used")?;
+pub fn write_to_ezo(dev: &mut LinuxI2CDevice, cmd_str: &str) -> Result<(), EzoError> {
+    let cmd = CString::new(cmd_str).context(ErrorKind::UnreadableCommand)?;
     if let Err(_) = dev.write(cmd.as_bytes_with_nul()) {
         thread::sleep(Duration::from_millis(100));
         dev.write(cmd.as_bytes_with_nul())
-            .context("Command could not be sent")?;
+            .context(ErrorKind::UnwritableCommand)?;
     };
     Ok(())
 }
@@ -139,7 +138,7 @@ fn turn_off_high_bits(v: &mut [u8]) {
 /// byte for the response code.  Then, pass a slice with the rest of
 /// the buffer (without that first byte) to this function to get an
 /// UTF-8 string.
-pub fn string_from_response_data(response: &[u8]) -> std::result::Result<String, EzoError> {
+pub fn string_from_response_data(response: &[u8]) -> Result<String, EzoError> {
     let mut buf = response.to_owned();
     turn_off_high_bits(&mut buf);
 

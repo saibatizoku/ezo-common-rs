@@ -11,22 +11,26 @@ pub struct EzoError {
 pub enum ErrorKind {
     #[fail(display = "could not parse Baud command")]
     BaudParse,
-	#[fail(display = "could not parse bps rate")]
-	BpsRateParse,
-	#[fail(display = "command parse failed")]
-	CommandParse,
-	#[fail(display = "the device responded with an error")]
-	DeviceErrorResponse,
-	#[fail(display = "response was not obtainable")]
-	I2CRead,
-	#[fail(display = "response is not a valid nul-terminated UTF-8 string")]
-	MalformedResponse,
-	#[fail(display = "the device has no data to respond")]
-	NoDataExpectedResponse,
-	#[fail(display = "response was not yet available")]
-	PendingResponse,
-	#[fail(display = "could not parse response")]
-	ResponseParse,
+    #[fail(display = "could not parse bps rate")]
+    BpsRateParse,
+    #[fail(display = "command parse failed")]
+    CommandParse,
+    #[fail(display = "the device responded with an error")]
+    DeviceErrorResponse,
+    #[fail(display = "response was not obtainable")]
+    I2CRead,
+    #[fail(display = "response is not a valid nul-terminated UTF-8 string")]
+    MalformedResponse,
+    #[fail(display = "the device has no data to respond")]
+    NoDataExpectedResponse,
+    #[fail(display = "response was not yet available")]
+    PendingResponse,
+    #[fail(display = "could not parse response")]
+    ResponseParse,
+    #[fail(display = "Command could not be read")]
+    UnreadableCommand,
+    #[fail(display = "Command could not be written to I2C device")]
+    UnwritableCommand,
 }
 
 impl Fail for EzoError {
@@ -53,7 +57,9 @@ impl EzoError {
 
 impl From<ErrorKind> for EzoError {
     fn from(kind: ErrorKind) -> EzoError {
-        EzoError { inner: Context::new(kind) }
+        EzoError {
+            inner: Context::new(kind),
+        }
     }
 }
 

@@ -1,10 +1,11 @@
 //! Parses I2C responses from the EC EZO Chip.
 //!
 //! Code modified from "Federico Mena Quintero <federico@gnome.org>"'s original.
-use super::{ErrorKind, Result};
+use super::{ErrorKind, EzoError};
 
 use std::fmt;
 use std::str::FromStr;
+
 use failure::ResultExt;
 
 /// Response for commands that may or may not expect ACK.
@@ -15,11 +16,11 @@ pub enum ResponseStatus {
 }
 
 impl ResponseStatus {
-    pub fn parse(response: &str) -> Result<ResponseStatus> {
+    pub fn parse(response: &str) -> Result<ResponseStatus, EzoError> {
         match response {
             "Ack" => Ok(ResponseStatus::Ack),
             "None" => Ok(ResponseStatus::None),
-            _ => Err(ErrorKind::ResponseParse.into()),
+            _ => Err(ErrorKind::ResponseParse)?,
         }
     }
 }
@@ -38,7 +39,7 @@ pub struct DeviceInfo {
 }
 
 impl DeviceInfo {
-    pub fn parse(response: &str) -> Result<DeviceInfo> {
+    pub fn parse(response: &str) -> Result<DeviceInfo, EzoError> {
         if response.starts_with("?I,") {
             let rest = response.get(3..).unwrap();
             let mut split = rest.split(',');
@@ -125,7 +126,7 @@ pub struct DeviceStatus {
 
 impl DeviceStatus {
     /// Parses the result of the "Status" command to get the device's status.
-    pub fn parse(response: &str) -> Result<DeviceStatus> {
+    pub fn parse(response: &str) -> Result<DeviceStatus, EzoError> {
         if response.starts_with("?STATUS,") {
             let rest = response.get(8..).unwrap();
             let mut split = rest.split(',');
@@ -183,7 +184,7 @@ pub enum Exported {
 }
 
 impl Exported {
-    pub fn parse(response: &str) -> Result<Exported> {
+    pub fn parse(response: &str) -> Result<Exported, EzoError> {
         if response.starts_with("*") {
             match response {
                 "*DONE" => Ok(Exported::Done),
@@ -224,7 +225,7 @@ pub struct ExportedInfo {
 }
 
 impl ExportedInfo {
-    pub fn parse(response: &str) -> Result<ExportedInfo> {
+    pub fn parse(response: &str) -> Result<ExportedInfo, EzoError> {
         if response.starts_with("?EXPORT,") {
             let num_str = response.get(8..).unwrap();
 
@@ -273,7 +274,7 @@ pub enum ProtocolLockStatus {
 }
 
 impl ProtocolLockStatus {
-    pub fn parse(response: &str) -> Result<ProtocolLockStatus> {
+    pub fn parse(response: &str) -> Result<ProtocolLockStatus, EzoError> {
         if response.starts_with("?PLOCK,") {
             let rest = response.get(7..).unwrap();
             let mut split = rest.split(',');
@@ -320,7 +321,7 @@ pub enum LedStatus {
 }
 
 impl LedStatus {
-    pub fn parse(response: &str) -> Result<LedStatus> {
+    pub fn parse(response: &str) -> Result<LedStatus, EzoError> {
         if response.starts_with("?L,") {
             let rest = response.get(3..).unwrap();
 
