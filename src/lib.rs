@@ -4,6 +4,9 @@
 //! > Currently, only __I2C Mode__ is supported.
 #![feature(exclusive_range_pattern)]
 
+#[cfg(feature = "actors")]
+extern crate actix;
+
 #[macro_use]
 extern crate failure;
 extern crate i2cdev;
