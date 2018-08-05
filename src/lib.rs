@@ -40,6 +40,10 @@ pub trait Command {
 
     fn get_command_string(&self) -> String;
     fn get_delay(&self) -> u64;
+    fn write<D: I2CDevice>(&self, _device: &mut D) -> Result<Self::Response, Self::Error> {
+        unimplemented!("WIP: the provided method will disappear when the 'define_command' macro is updated");
+    }
+    #[deprecated(since="0.1.2", note="please use `Command::write` instead")]
     fn run(&self, dev: &mut LinuxI2CDevice) -> Result<Self::Response, Self::Error>;
 }
 
