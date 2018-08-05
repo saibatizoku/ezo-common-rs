@@ -17,6 +17,8 @@ pub enum ErrorKind {
     CommandParse,
     #[fail(display = "the device responded with an error")]
     DeviceErrorResponse,
+    #[fail(display = "response was valid but reading is out of valid range")]
+    InvalidReading,
     #[fail(display = "response was not obtainable")]
     I2CRead,
     #[fail(display = "response is not a valid nul-terminated UTF-8 string")]
