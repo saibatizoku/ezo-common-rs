@@ -17,7 +17,7 @@ failure = "0.1"
 i2cdev = "0.4"
 
 [features]
-default = ["actors"]
+default = []
 actors = ["actix"]
 
 [profile.release]
