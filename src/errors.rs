@@ -2,11 +2,13 @@
 use failure::{Backtrace, Context, Fail};
 use std::fmt::{self, Display};
 
+/// Errors for EZO chips.
 #[derive(Debug)]
 pub struct EzoError {
     inner: Context<ErrorKind>,
 }
 
+/// Kinds of errors for EZO chips.
 #[derive(Copy, Clone, Eq, Debug, Fail, PartialEq)]
 pub enum ErrorKind {
     #[fail(display = "could not parse Baud command")]
