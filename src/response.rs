@@ -192,7 +192,7 @@ impl Exported {
             }
         } else {
             match response.len() {
-                1..13 => Ok(Exported::ExportString(response.to_string())),
+                1..=13 => Ok(Exported::ExportString(response.to_string())),
                 _ => Err(ErrorKind::ResponseParse.into()),
             }
         }

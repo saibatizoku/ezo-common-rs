@@ -2,8 +2,6 @@
 //! media.
 //!
 //! > Currently, only __I2C Mode__ is supported.
-#![feature(exclusive_range_pattern)]
-
 #[cfg(feature = "actors")]
 extern crate actix;
 
