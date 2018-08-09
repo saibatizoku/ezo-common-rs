@@ -24,6 +24,9 @@ use errors::*;
 use failure::ResultExt;
 use i2cdev::{core::I2CDevice, linux::LinuxI2CDevice};
 
+#[cfg(feature = "actors")]
+pub use actix::prelude::Message;
+
 /// Default buffer size for ASCII data responses.
 ///
 /// Implement your own version of MAX_DATA wherever you are implementing
@@ -161,7 +164,10 @@ pub fn string_from_response_data(response: &[u8]) -> Result<String, EzoError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use response::ResponseStatus;
+    use super::response::ResponseStatus;
+
+    #[cfg(feature = "actors")]
+    use actix::prelude::*;
 
     #[test]
     fn converts_baud_rates_to_numbers() {

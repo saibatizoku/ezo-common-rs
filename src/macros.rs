@@ -108,6 +108,11 @@ macro_rules! define_command_impl {
 
             command_run_fn! { NoAck }
         }
+
+        #[cfg(feature = "actors")]
+        impl Message for $name {
+            type Result = Result<ResponseStatus, EzoError>;
+        }
     };
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr) => {
         impl Command for $name {
@@ -125,6 +130,11 @@ macro_rules! define_command_impl {
 
             command_run_fn! { NoAck }
         }
+
+        #[cfg(feature = "actors")]
+        impl Message for $name {
+            type Result = Result<ResponseStatus, EzoError>;
+        }
     };
     ($name:ident, $command_string:block, $delay:expr,Ack) => {
         impl Command for $name {
@@ -140,6 +150,11 @@ macro_rules! define_command_impl {
             }
 
             command_run_fn! { Ack }
+        }
+
+        #[cfg(feature = "actors")]
+        impl Message for $name {
+            type Result = Result<ResponseStatus, EzoError>;
         }
     };
     ($cmd:ident : $name:ident($data:ty), $command_string:block, $delay:expr,Ack) => {
@@ -157,6 +172,11 @@ macro_rules! define_command_impl {
             }
 
             command_run_fn! { Ack }
+        }
+
+        #[cfg(feature = "actors")]
+        impl Message for $name {
+            type Result = Result<ResponseStatus, EzoError>;
         }
     };
     (
@@ -180,6 +200,11 @@ macro_rules! define_command_impl {
             }
 
             command_run_fn! { $resp: $response, $run_func }
+        }
+
+        #[cfg(feature = "actors")]
+        impl Message for $name {
+            type Result = Result<$response, EzoError>;
         }
     };
     (
@@ -205,6 +230,11 @@ macro_rules! define_command_impl {
             }
 
             command_run_fn! { $resp: $response, $run_func }
+        }
+
+        #[cfg(feature = "actors")]
+        impl Message for $name {
+            type Result = Result<$response, EzoError>;
         }
     };
 }

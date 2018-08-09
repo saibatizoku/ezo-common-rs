@@ -51,11 +51,6 @@ impl FromStr for Baud {
     }
 }
 
-#[cfg(feature = "actors")]
-impl Message for Baud {
-    type Result = Result<ResponseStatus, EzoError>;
-}
-
 define_command! {
     doc: "`CAL,CLEAR` command. Clears current calibration.",
     CalibrationClear, { "CAL,CLEAR".to_string() }, 300, Ack
@@ -71,11 +66,6 @@ impl FromStr for CalibrationClear {
             _ => Err(ErrorKind::CommandParse)?,
         }
     }
-}
-
-#[cfg(feature = "actors")]
-impl Message for CalibrationClear {
-    type Result = Result<ResponseStatus, EzoError>;
 }
 
 define_command! {
@@ -105,11 +95,6 @@ impl FromStr for DeviceAddress {
     }
 }
 
-#[cfg(feature = "actors")]
-impl Message for DeviceAddress {
-    type Result = Result<ResponseStatus, EzoError>;
-}
-
 define_command! {
     doc: "`I` command. Returns a `DeviceInfo` response. Device information.",
     DeviceInformation, { "I".to_string() }, 300,
@@ -126,11 +111,6 @@ impl FromStr for DeviceInformation {
             _ => Err(ErrorKind::CommandParse)?,
         }
     }
-}
-
-#[cfg(feature = "actors")]
-impl Message for DeviceInformation {
-    type Result = Result<DeviceInfo, EzoError>;
 }
 
 define_command! {
@@ -151,11 +131,6 @@ impl FromStr for Export {
     }
 }
 
-#[cfg(feature = "actors")]
-impl Message for Export {
-    type Result = Result<Exported, EzoError>;
-}
-
 define_command! {
     doc: "`EXPORT,?` command. Returns an `ExportedInfo` response. Calibration string info.",
     ExportInfo, { "EXPORT,?".to_string() }, 300,
@@ -172,11 +147,6 @@ impl FromStr for ExportInfo {
             _ => Err(ErrorKind::CommandParse)?,
         }
     }
-}
-
-#[cfg(feature = "actors")]
-impl Message for ExportInfo {
-    type Result = Result<ExportedInfo, EzoError>;
 }
 
 define_command! {
@@ -196,11 +166,6 @@ impl FromStr for Factory {
     }
 }
 
-#[cfg(feature = "actors")]
-impl Message for Factory {
-    type Result = Result<ResponseStatus, EzoError>;
-}
-
 define_command! {
     doc: "`FIND` command. Find device with blinking white LED.",
     Find, { "F".to_string() }, 300
@@ -216,11 +181,6 @@ impl FromStr for Find {
             _ => Err(ErrorKind::CommandParse)?,
         }
     }
-}
-
-#[cfg(feature = "actors")]
-impl Message for Find {
-    type Result = Result<ResponseStatus, EzoError>;
 }
 
 define_command! {
@@ -250,11 +210,6 @@ impl FromStr for Import {
     }
 }
 
-#[cfg(feature = "actors")]
-impl Message for Import {
-    type Result = Result<ResponseStatus, EzoError>;
-}
-
 define_command! {
     doc: "`L,0` command. Disable LED.",
     LedOff, { "L,0".to_string() }, 300, Ack
@@ -272,11 +227,6 @@ impl FromStr for LedOff {
     }
 }
 
-#[cfg(feature = "actors")]
-impl Message for LedOff {
-    type Result = Result<ResponseStatus, EzoError>;
-}
-
 define_command! {
     doc: "`L,1` command. Enable LED.",
     LedOn, { "L,1".to_string() }, 300, Ack
@@ -292,11 +242,6 @@ impl FromStr for LedOn {
             _ => Err(ErrorKind::CommandParse)?,
         }
     }
-}
-
-#[cfg(feature = "actors")]
-impl Message for LedOn {
-    type Result = Result<ResponseStatus, EzoError>;
 }
 
 define_command! {
@@ -317,11 +262,6 @@ impl FromStr for LedState {
     }
 }
 
-#[cfg(feature = "actors")]
-impl Message for LedState {
-    type Result = Result<LedStatus, EzoError>;
-}
-
 define_command! {
     doc: "`PLOCK,0` command. Disable I2C protocol lock.",
     ProtocolLockDisable, { "PLOCK,0".to_string() }, 300, Ack
@@ -339,11 +279,6 @@ impl FromStr for ProtocolLockDisable {
     }
 }
 
-#[cfg(feature = "actors")]
-impl Message for ProtocolLockDisable {
-    type Result = Result<ResponseStatus, EzoError>;
-}
-
 define_command! {
     doc: "`PLOCK,1` command. Enable I2C protocol lock.",
     ProtocolLockEnable, { "PLOCK,1".to_string() }, 300, Ack
@@ -359,11 +294,6 @@ impl FromStr for ProtocolLockEnable {
             _ => Err(ErrorKind::CommandParse)?,
         }
     }
-}
-
-#[cfg(feature = "actors")]
-impl Message for ProtocolLockEnable {
-    type Result = Result<ResponseStatus, EzoError>;
 }
 
 define_command! {
@@ -384,11 +314,6 @@ impl FromStr for ProtocolLockState {
     }
 }
 
-#[cfg(feature = "actors")]
-impl Message for ProtocolLockState {
-    type Result = Result<ProtocolLockStatus, EzoError>;
-}
-
 define_command! {
     doc: "`SLEEP` command. Enter sleep mode/low power.",
     Sleep, { "SLEEP".to_string() }, 0
@@ -404,11 +329,6 @@ impl FromStr for Sleep {
             _ => Err(ErrorKind::CommandParse)?,
         }
     }
-}
-
-#[cfg(feature = "actors")]
-impl Message for Sleep {
-    type Result = Result<ResponseStatus, EzoError>;
 }
 
 define_command! {
@@ -427,11 +347,6 @@ impl FromStr for Status {
             _ => Err(ErrorKind::CommandParse)?,
         }
     }
-}
-
-#[cfg(feature = "actors")]
-impl Message for Status {
-    type Result = Result<DeviceStatus, EzoError>;
 }
 
 #[cfg(test)]
