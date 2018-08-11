@@ -2,9 +2,6 @@
 //! media.
 //!
 //! > Currently, only __I2C Mode__ is supported.
-#[cfg(feature = "actors")]
-extern crate actix;
-
 #[macro_use]
 extern crate failure;
 extern crate i2cdev;
@@ -23,9 +20,6 @@ use std::time::Duration;
 use errors::*;
 use failure::ResultExt;
 use i2cdev::{core::I2CDevice, linux::LinuxI2CDevice};
-
-#[cfg(feature = "actors")]
-pub use actix::prelude::Message;
 
 /// Default buffer size for ASCII data responses.
 ///
@@ -165,9 +159,6 @@ pub fn string_from_response_data(response: &[u8]) -> Result<String, EzoError> {
 mod tests {
     use super::*;
     use super::response::ResponseStatus;
-
-    #[cfg(feature = "actors")]
-    use actix::prelude::*;
 
     #[test]
     fn converts_baud_rates_to_numbers() {

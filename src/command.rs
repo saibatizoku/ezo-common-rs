@@ -9,8 +9,6 @@ use super::{
     response_code, string_from_response_data, write_to_ezo, BpsRate, Command, ResponseCode,
 };
 
-#[cfg(feature = "actors")]
-use actix::Message;
 use failure::ResultExt;
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::LinuxI2CDevice;
